@@ -1,0 +1,13 @@
+check-leaks: true
+color: true
+extension:
+  - 'js'
+file:
+  - './test/lib/iterator/MongoCursor-test.js'
+full-trace: true
+growl: true
+recursive: false
+# reporter: 'spec'
+require: '@babel/register'
+# spec: 'test/**/**/*-test.js'
+watch: true
