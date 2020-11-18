@@ -33,6 +33,7 @@
   "devDependencies": {
     "@leansdk/leanes": "https://github.com/LeanSDK/leanes.git#feature/building_improveds",
     "@leansdk/leanes-mapper-addon": "https://github.com/LeanSDK/leanes-mapper-addon.git",
+    "@leansdk/leanes-queryable-addon": "https://github.com/LeanSDK/leanes-queryable-addon.git",
     "@babel/cli": "^7.0.0",
     "@babel/core": "^7.9.6",
     "@babel/plugin-proposal-class-properties": "^7.8.3",

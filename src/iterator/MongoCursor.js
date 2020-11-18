@@ -13,82 +13,99 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with leanes-mongo-addon.  If not, see <https://www.gnu.org/licenses/>.
 
-import type { CollectionInterface } from '../interfaces/CollectionInterface';
+// import type { CollectionInterface } from '../interfaces/CollectionInterface';
 import type { CursorInterface } from '../interfaces/CursorInterface';
 
 export default (Module) => {
   const {
     CoreObject,
-    initialize, partOf, meta, property, method, nameBy,
+    initialize, partOf, meta, property, method, nameBy, injectable, inject,
     Utils: { _ }
   } = Module.NS;
 
   @initialize
+  @injectable()
   @partOf(Module)
-  class MongoCursor extends CoreObject {
+  class MongoCursor<
+    D = {}, C = { normalize: (ahData: any) => Promise<D> }, T = D[]
+  > extends CoreObject implements CursorInterface<C, D> {
     @nameBy static __filename = __filename;
     @meta static object = {};
 
     @property _cursor: ?object;
-    @property _collection: ?CollectionInterface;
+    @property _collection: ?C;
     @property get isClosed(): boolean {
       if (this._cursor != null) {
         return this._cursor.isClosed() != null ? this._cursor.isClosed() : true;
       }
+      return true;
     }
 
-    @method setIterable(aoCursor: object): CursorInterface {
+    @method setIterable(aoCursor: object): CursorInterface<C, D> {
       this._cursor = aoCursor;
       return this;
     }
 
-    @method setCollection(aoCollection: CollectionInterface): CursorInterface {
+    @method setCollection(aoCollection: C): CursorInterface<C, D> {
       this._collection = aoCollection;
       return this;
     }
 
-    @method async toArray(): array {
-      while (await this.hasNext()) {
-        await this.next();
+    @property collectionName: ?string = null;
+
+    @inject('CollectionFactory<*>')
+    @property _collectionFactory: (string) => C;
+
+    @property get collection(): ?C {
+      if (this.collectionName != null) {
+        return this._collectionFactory(this.collectionName)
+      } else {
+        return this._collection
       }
     }
 
-    @method async next(): any {
-      if (this._cursor == null) {
-        return;
+    @method async toArray(): Promise<D[]> {
+      const results = [];
+      while ((await this.hasNext())) {
+        results.push(await this.next());
       }
+      return results;
+    }
+
+    @method async next(): Promise<?D> {
+      if (this._cursor == null) return;
       const data = await this._cursor.next();
-      switch (false) {
-        case !(data == null):
+      switch (true) {
+        case (data == null):
           return data;
-        case this._collection == null:
-          return await this._collection.normalize(data)
+        case (this.collection != null):
+          return await this.collection.normalize(data)
         default:
           return data;
       }
     }
 
-    @method async hasNext(): boolean {
+    @method async hasNext(): Promise<boolean> {
       return await !this.isClosed && (await this._cursor.hasNext());
     }
 
-    @method async close() {
-      await Module.NS.Promise.resolve(
+    @method async close(): Promise<void> {
+      await Promise.resolve(
         this._cursor != null ? this._cursor.close() : void 0
       );
     }
 
-    @method async count(): number {
+    @method async count(): Promise<number> {
       if (this._cursor == null) {
         return 0;
       }
       return await (await this._cursor.count(true));
     }
 
-    @method async forEach(lambda: function) {
-      const index = 0;
+    @method async forEach(lambda: (D, number) =>?Promise<void>): Promise<void> {
+      let index = 0;
       try {
-        while (await this.hasNext()) {
+        while ((await this.hasNext())) {
           await lambda(await this.next(), index++)
         }
       } catch (err) {
@@ -97,24 +114,26 @@ export default (Module) => {
       }
     }
 
-    @method async map(lambda: function): array {
-      const index = 0;
+    @method async map<R>(lambda: (D, number) => R | Promise<R>): Promise<R[]> {
+      let index = 0;
       try {
-        while (await this.hasNext()) {
-          await lambda(await this.next(), index++)
+        const results = [];
+        while ((await this.hasNext())) {
+          results.push(await lambda((await this.next()), index++));
         }
+        return results;
       } catch (err) {
         await this.close();
         throw (err);
       }
     }
 
-    @method async filter(lambda: function): array {
-      const index = 0;
+    @method async filter(lambda: (D, number) => boolean | Promise<boolean>): Promise<D[]> {
+      let index = 0;
       const records = [];
       try {
-        while (await this.hasNext()) {
-          const record = await this.next();
+        while ((await this.hasNext())) {
+          const record = (await this.next());
           if (await lambda(record, index++)) {
             records.push(record);
           }
@@ -126,47 +145,45 @@ export default (Module) => {
       }
     }
 
-    @method async find(lambda: function): any {
-      const index = 0;
+    @method async find(lambda: (D, number) => boolean | Promise<boolean>): Promise<?D> {
+      let index = 0;
       let _record = null;
       try {
-        while (await this.hasNext()) {
-          const record = await this.next();
+        while ((await this.hasNext())) {
+          const record = (await this.next());
           if (await lambda(record, index++)) {
             _record = record;
             break;
           }
-          return _record;
         }
+        return _record;
       } catch (err) {
         await this.close();
         throw (err);
       }
     }
 
-    @method async compact(): array {
-      if (this._cursor == null) {
-        return [];
-      }
-      const records = [];
+    @method async compact(): Promise<D[]> {
+      if (this._cursor == null) return [];
+      const results = [];
       try {
-        while (await this.hasNext()) {
-          const rawRecord = await this._cursor.next();
-          if (!_.isEmpty(rawRecord)) {
-            const record = this._collection != null ? this._collection.normalize(rawRecord) : rawRecord;
-            records.push(record);
+        while ((await this.hasNext())) {
+          const rawResult = await (this._cursor.next());
+          if (!_.isEmpty(rawResult)) {
+            const result = await (this.collection != null ? this.collection.normalize(rawResult) : rawResult);
+            results.push(result);
           }
         }
-        return records;
+        return results;
       } catch (err) {
-        this.close();
+        await this.close();
         throw (err);
       }
     }
 
-    @method async reduce(lambda: function, initialValue: ?any): any {
+    @method async reduce<I>(lambda: (I, D, number) => I | Promise<I>, initialValue: I): Promise<I> {
       try {
-        const index = 0;
+        let index = 0;
         let _initialValue = initialValue;
         while (await this.hasNext()) {
           _initialValue = await lambda(_initialValue, (await this.next()), index++);
@@ -178,10 +195,10 @@ export default (Module) => {
       }
     }
 
-    @method async first(): any {
+    @method async first(): Promise<?D> {
       try {
-        const result = await this.hasNext() != null ? this.next : null;
-        this.close();
+        const result = (await this.hasNext()) != null ? (await this.next) : null;
+        await this.close();
         return result;
       } catch (err) {
         await this.close();
@@ -195,16 +212,6 @@ export default (Module) => {
 
     @method static async replicateObject() {
       throw new Error(`replicateObject method not supported for ${this.name}`);
-    }
-
-    constructor(aoCollection = null, aoCursor = null) {
-      super(...arguments);
-      if(aoCollection != null) {
-        this._collection = aoCollection;
-      }
-      if(aoCursor != null) {
-        this._cursor = aoCursor;
-      }
     }
   }
 }

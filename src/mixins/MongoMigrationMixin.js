@@ -18,14 +18,15 @@
 
 export default (Module) => {
   const {
-    LogMessage: {
-      SEND_TO_LOG,
-      LEVELS,
-      DEBUG
-    },
+    UP, DOWN, SUPPORTED_TYPES,
+    Pipes,
     initializeMixin, meta, property, method,
-    Utils: { _, co, jsonStringify }
+    Utils: { _, jsonStringify }
   } = Module.NS;
+  const { LogMessage } = Pipes.NS;
+  const {
+    SEND_TO_LOG, LEVELS, DEBUG
+  } = LogMessage;
 
   const getCollection = async (db: object, collectionFullName: string): object => {
     return await new Promise((resolve, reject) => {
@@ -38,21 +39,26 @@ export default (Module) => {
   }
 
   Module.defineMixin(__filename, (BaseClass) => {
-    const { UP, DOWN, SUPPORTED_TYPES } = this.NS;
-
     @initializeMixin
     class Mixin extends BaseClass {
       @meta static object = {};
 
-      @method async createCollection(collectionName: string, options: ?object = {}) {
+      @method async createCollection(
+        collectionName: string,
+        options: ?object
+      ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
         const voDB = voDB.createCollection(qualifiedName, options);
       }
 
-      @method async createEdgeCollection(collectionName1: string, collectionName2: string, options: ?object = {}) {
+      @method async createEdgeCollection(
+        collectionName1: string,
+        collectionName2: string,
+        options: ?object
+      ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(`${collectionName1}_${collectionName2}`);
         const voDB = await this.collection.connection;
-        this.collection.sendNotification(
+        this.collection.send(
           SEND_TO_LOG,
           `MongoMigrationMixin::createEdgeCollection qualifiedName = ${qualifiedName}, options = ${jsonStringify(options)}`,
           LEVELS[DEBUG]
@@ -60,10 +66,13 @@ export default (Module) => {
         await voDB.createCollection(qualifiedName, options);
       }
 
-      @method async addField(collectionName: string, fieldName: string, options: SUPPORTED_TYPES): {
-        type: SUPPORTED_TYPES,
-        default: any
-      } {
+      @method async addField(
+        collectionName: string,
+        fieldName: string,
+        options: $Values<SUPPORTED_TYPES> | {
+          type: $Values<SUPPORTED_TYPES>, 'default': any
+        }
+      ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
         if (_.isString(options)) {
           return;
@@ -88,15 +97,15 @@ export default (Module) => {
         }
         if (initial != null) {
           const voDB = await this.collection.connection;
-          this.collection.sendNotification(
+          this.collection.send(
             SEND_TO_LOG,
             `MongoMigrationMixin::addField qualifiedName = ${qualifiedName}, $set: ${jsonStringify({
               [`${fieldName}`]: initial
             })}`,
             LEVELS[DEBUG]
           );
-          const collection = await getCollection(voDB, qualifiedName);
-          await collection.updateMany({}, {
+          const voDbCollection = await getCollection(voDB, qualifiedName);
+          await voDbCollection.updateMany({}, {
             $set: {
               [`${fieldName}`]: initial
             },
@@ -105,14 +114,18 @@ export default (Module) => {
         }
       }
 
-      @method async addIndex(collectionName: string, fieldNames: string[], options: {
-        type: 'hash' | 'skiplist' | 'persistent' | 'geo' | 'fulltext',
-        unique: ?boolean,
-        sparse: ?boolean
-      }) {
+      @method async addIndex(
+        collectionName: string,
+        fieldNames: string[],
+        options: {
+          type: 'hash' | 'skiplist' | 'persistent' | 'geo' | 'fulltext',
+          unique: ?boolean,
+          sparse: ?boolean
+        }
+      ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
         const voDB = await this.collection.connection;
-        const collection = await getCollection(voDB, qualifiedName);
+        const voDbCollection = await getCollection(voDB, qualifiedName);
         const indexFields = {};
         fieldNames.forEach((fieldName) => {
           indexFields[fieldName] = 1;
@@ -123,26 +136,35 @@ export default (Module) => {
           background: options.background,
           name: options.name
         };
-        this.collection.sendNotification(
+        this.collection.send(
           SEND_TO_LOG,
           `MongoMigrationMixin::addIndex indexFields = ${jsonStringify(indexFields)}, opts = ${jsonStringify(opts)}`,
           LEVELS[DEBUG]
         );
-        await collection.ensureIndex(indexFields, opts);
+        await voDbCollection.ensureIndex(indexFields, opts);
       }
 
-      @method async addTimestamps(collectionName: string, options: ?object = {}) {
+      @method async addTimestamps(
+        collectionName: string,
+        options: ?object = {}
+      ): Promise<void> {
         // NOTE: нет смысла выполнять запрос, т.к. в addField есть проверка if initial? и если null, то атрибут не добавляется
       }
 
-      @method async changeCollection(name: string, options: object) {
+      @method async changeCollection(
+        collectionName: string,
+        options: object
+      ): Promise<void> {
         // not supported in MongoDB because a collection can't been modified
       }
 
-      @method async changeField(collectionName: string, fieldName: string,
-        options: SUPPORTED_TYPES | {
-          type: SUPPORTED_TYPES
-        }) {
+      @method async changeField(
+        collectionName: string,
+        fieldName: string,
+        options: $Values<SUPPORTED_TYPES> | {
+          type: $Values<SUPPORTED_TYPES>
+        } = {}
+      ): Promise<void> {
         const {
           json,
           binary,
@@ -163,8 +185,8 @@ export default (Module) => {
         } = SUPPORTED_TYPES;
         const qualifiedName = this.collection.collectionFullName(collectionName);
         const voDB = await this.collection.connection;
-        const collection = await getCollection(voDB, qualifiedName);
-        const cursor = await collection.find().batchSize(1);
+        const voDbCollection = await getCollection(voDB, qualifiedName);
+        const cursor = await voDbCollection.find().batchSize(1);
         const type = _.isString(options) ? options : options.type;
         while (await cursor.hasNext()) {
           const document = await cursor.next();
@@ -190,14 +212,14 @@ export default (Module) => {
               break;
           }
         }
-        this.collection.sendNotification(
+        this.collection.send(
           SEND_TO_LOG,
           `MongoMigrationMixin::changeField qualifiedName = ${qualifiedName}, _id: ${jsonStringify(document._id)}, $set: ${jsonStringify({
             [`${fieldName}`]: newValue
           })}`,
           LEVELS[DEBUG]
         );
-        await collection.updateOne({
+        await voDbCollection.updateOne({
           _id: document._id
         }, {
           $set: {
@@ -206,18 +228,22 @@ export default (Module) => {
         })
       }
 
-      @method async renameField(collectionName: string, oldFieldName: string, newFieldName: string) {
+      @method async renameField(
+        collectionName: string,
+        fieldName: string,
+        newFieldName: string
+      ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
         const voDB = await this.collection.connection;
-        const collection = await getCollection(voDB, qualifiedName);
-        this.collection.sendNotification(
+        const voDbCollection = await getCollection(voDB, qualifiedName);
+        this.collection.send(
           SEND_TO_LOG,
           `MongoMigrationMixin::renameField qualifiedName = ${qualifiedName}, $rename: ${jsonStringify({
             [`${oldFieldName}`]: newFieldName
           })}`,
           LEVELS[DEBUG]
         );
-        await collection.updateMany(
+        await voDbCollection.updateMany(
           {},
           {
             $rename: {
@@ -227,28 +253,37 @@ export default (Module) => {
         );
       }
 
-      @method async renameIndex(collectionName: string, oldIndexName: string, newIndexName: string) {
+      @method async renameIndex(
+        collectionName: string,
+        oldCollectionName: string,
+        newCollectionName: string
+      ): Promise<void> {
         // not supported in MongoDB because a index can't been modified
       }
 
-      @method async renameCollection(collectionName: string, newCollectionName: string) {
+      @method async renameCollection(
+        collectionName: string,
+        newCollectionName: string
+      ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
         const newQualifiedName = this.collection.collectionFullName(newCollectionName);
-        this.collection.sendNotification(
+        this.collection.send(
           SEND_TO_LOG,
           `MongoMigrationMixin::renameCollection qualifiedName = ${qualifiedName}, newQualifiedName = ${newQualifiedName}`,
           LEVELS[DEBUG]
         );
         const voDB = await this.collection.connection;
-        const collection = await getCollection(voDB, qualifiedName);
-        await collection.rename(newQualifiedName);
+        const voDbCollection = await getCollection(voDB, qualifiedName);
+        await voDbCollection.rename(newQualifiedName);
       }
 
-      @method async dropCollection(collectionName: string) {
+      @method async dropCollection(
+        collectionName: string
+      ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
         const voDB = await this.collection.connection;
         if ((await voDB.listCollections({ name: qualifiedName }).toArray()).length !== 0) {
-          this.collection.sendNotification(
+          this.collection.send(
             SEND_TO_LOG,
             `MongoMigrationMixin::dropCollection qualifiedName = ${qualifiedName}`,
             LEVELS[DEBUG]
@@ -257,11 +292,14 @@ export default (Module) => {
         }
       }
 
-      @method async dropEdgeCollection(collectionName1: string, collectionName2: string) {
+      @method async dropEdgeCollection(
+        collectionName1: string,
+        collectionName2: string
+      ): Promise<void> {
         const voDB = await this.collection.connection;
         const qualifiedName = this.collection.collectionFullName(`${collectionName1}_${collectionName2}`);
         if ((await voDB.listCollections({ name: qualifiedName }).toArray()).length !== 0) {
-          this.collection.sendNotification(
+          this.collection.send(
             SEND_TO_LOG,
             `MongoMigrationMixin::dropEdgeCollection qualifiedName = ${qualifiedName}`,
             LEVELS[DEBUG]
@@ -270,18 +308,21 @@ export default (Module) => {
         }
       }
 
-      @method async removeField(collectionName: string, fieldName: string) {
+      @method async removeField(
+        collectionName: string,
+        fieldName: string
+      ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
         const voDB = await this.collection.connection;
-        const collection = await getCollection(voDB, qualifiedName);
-        this.collection.sendNotification(
+        const voDbCollection = await getCollection(voDB, qualifiedName);
+        this.collection.send(
           SEND_TO_LOG,
           `MongoMigrationMixin::removeField qualifiedName = ${qualifiedName}, $unset: ${jsonStringify({
             [`${fieldName}`]: ''
           })}`,
           LEVELS[DEBUG]
         );
-        await collection.updateMany(
+        await voDbCollection.updateMany(
           {},
           {
             $unset: {
@@ -294,53 +335,59 @@ export default (Module) => {
         );
       }
 
-      @method async removeIndex(collectionName: string, fieldNames: string,
+      @method async removeIndex(
+        collectionName: string,
+        fieldNames: string[],
         options: {
           type: 'hash' | 'skiplist' | 'persistent' | 'geo' | 'fulltext',
           unique: ?boolean,
           sparse: ?boolean
-        }) {
+        }
+      ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
         const voDB = await this.collection.connection;
-        const collection = await getCollection(voDB, qualifiedName);
+        const voDbCollection = await getCollection(voDB, qualifiedName);
         const indexName = options.name;
         if (!(indexName != null)) {
           const indexFields = {};
           fieldNames.forEach((fieldName) => {
             indexFields[fieldName] = 1;
           });
-          const indexName = await collection.ensureIndex(indexFields, {
+          const indexName = await voDbCollection.ensureIndex(indexFields, {
             unique: options.unique,
             sparse: options.sparse,
             background: options.background,
             name: options.name
           });
         }
-        if (await collection.indexExists(indexName)) {
-          this.collection.sendNotification(
+        if (await voDbCollection.indexExists(indexName)) {
+          this.collection.send(
             SEND_TO_LOG,
             `MongoMigrationMixin::removeIndex qualifiedName = ${qualifiedName}, indexName = ${indexName}, indexFields = ${jsonStringify(indexFields)}, options = ${jsonStringify(options)}`,
             LEVELS[DEBUG]
           );
-          await collection.dropIndex(indexName);
+          await voDbCollection.dropIndex(indexName);
         }
       }
 
-      @method async removeTimestamps(collectionName: string, options: ?object = {}) {
+      @method async removeTimestamps(
+        collectionName: string,
+        options: ?object = {}
+      ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
         const voDB = await this.collection.connection;
-        const collection = await getCollection(voDB, qualifiedName);
+        const voDbCollection = await getCollection(voDB, qualifiedName);
         const timestamps = {
           createdAt: null,
           updatedAt: null,
           deletedAt: null
         };
-        this.collection.sendNotification(
+        this.collection.send(
           SEND_TO_LOG,
           `MongoMigrationMixin::removeTimestamps qualifiedName = ${qualifiedName}, $unset: ${jsonStringify(timestamps)}`,
           LEVELS[DEBUG]
         );
-        await collection.updateMany(
+        await voDbCollection.updateMany(
           {},
           {
             $unset: timestamps

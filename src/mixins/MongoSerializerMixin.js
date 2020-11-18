@@ -13,11 +13,12 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with leanes-mongo-addon.  If not, see <https://www.gnu.org/licenses/>.
 
+import type { RecordInterface } from '../interfaces/RecordInterface';
+
 import crypto from 'crypto';
 
 export default (Module) => {
   const {
-    RecordInterface,
     initializeMixin, meta, property, method,
   } = Module.NS;
 

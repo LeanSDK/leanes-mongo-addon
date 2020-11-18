@@ -933,7 +933,7 @@ export default (Module) => {
         return voCursor;
       }
 
-      @method async createFileWriteStream(opts: { filename: string }, metadata: ?object = {}): Promise<StreamT> {
+      @method async createFileWriteStream(opts: { id: string }, metadata: ?object = {}): StreamT {
         const bucket = await this.bucket;
         this.send(
           SEND_TO_LOG,
@@ -943,10 +943,10 @@ export default (Module) => {
         const mongodb = this.getData().mongodb != null ? this.getData().mongodb : this.configs.mongodb;
         const { dbName } = mongodb;
         const metadata = assign({}, { dbName }, metadata);
-        return bucket.openUploadStream(opts.filename, { metadata });
+        return bucket.openUploadStream(opts._id, { metadata });
       }
 
-      @method async createFileReadStream(opts: { filename: string }): Promise<?StreamT> {
+      @method async createFileReadStream(opts: { id: string }): ?StreamT {
         const bucket = await this.bucket;
         this.send(
           SEND_TO_LOG,
@@ -954,13 +954,13 @@ export default (Module) => {
           LEVELS[DEBUG]
         );
         if (await this.fileExists(opts)) {
-          return bucket.openDownloadStreamByName(opts.filename, {});
+          return bucket.openDownloadStreamByName(opts._id, {});
         } else {
           return;
         }
       }
 
-      @method async fileExists(opts: { filename: string }): Promise<boolean> {
+      @method async fileExists(opts: { id: string }): boolean {
         const bucket = await this.bucket;
         this.send(
           SEND_TO_LOG,
@@ -968,11 +968,11 @@ export default (Module) => {
           LEVELS[DEBUG]
         );
         return await (await bucket.find({
-          filename: opts.filename
+          filename: opts._id
         }).hasNext());
       }
 
-      @method async removeFile(opts: { filename: string }): Promise<void> {
+      @method async removeFile(opts: { id: string }) {
         const bucket = await this.bucket;
         this.send(
           SEND_TO_LOG,
@@ -980,7 +980,7 @@ export default (Module) => {
           LEVELS[DEBUG]
         );
         const cursor = await bucket.find({
-          filename: opts.filename
+          filename: opts._id
         });
         const file = yield cursor.next();
         if (file != null) {
