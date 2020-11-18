@@ -1,13 +1,14 @@
 const { expect, assert } = require('chai');
 const sinon = require('sinon');
 const _ = require('lodash');
-const LeanES = require('@leansdk/leanes/src/leanes').default;
-const MongoStorage = require('../../../lib/index.js').default;
+const addonPath = process.env.ENV === 'build' ? "../../lib/index.dev" : "../../src/index.js";
+const MongoAddon = require(addonPath).default;
+const MapperAddon = require('@leansdk/leanes-mapper-addon/src').default;
+const LeanES = require('@leansdk/leanes/src').default;
 const { MongoClient } = require('mongodb');
 
-
 const {
-  initialize, partOf, nameBy, meta, constant, mixin, property, method, attribute, action, plugin,
+  initialize, partOf, nameBy, meta, constant, mixin, property, method, plugin,
 } = LeanES.NS;
 
 describe('MongoCursor', () => {
@@ -60,7 +61,8 @@ describe('MongoCursor', () => {
     it('Create MongoCursor instance with two valid params', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -79,7 +81,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TEST_COLLECTION');
@@ -98,7 +100,8 @@ describe('MongoCursor', () => {
     it('Create MongoCursor instance with only Collection instance as param', () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -117,7 +120,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TEST_COLLECTION');
@@ -132,7 +135,8 @@ describe('MongoCursor', () => {
     it('Create MongoCursor instance with only NativeCursor as param', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -148,7 +152,8 @@ describe('MongoCursor', () => {
     it('Create MongoCursor instance without params', () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -162,7 +167,8 @@ describe('MongoCursor', () => {
     it('Setup collection on created MongoCursor instance with valid params', () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -181,7 +187,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TEST_COLLECTION');
@@ -196,7 +202,8 @@ describe('MongoCursor', () => {
     it('Use method setCollection for change used collection', () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -215,7 +222,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TEST_COLLECTION_1');
@@ -236,7 +243,8 @@ describe('MongoCursor', () => {
     it('Setup cursor on created MongoCursor instance with valid params', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -252,7 +260,8 @@ describe('MongoCursor', () => {
     it('Use method setIterable for change used cursor', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -271,7 +280,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "hasNext" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -290,7 +300,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TEST_COLLECTION');
@@ -309,7 +319,8 @@ describe('MongoCursor', () => {
     it('Use next manually', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -328,7 +339,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TEST_COLLECTION');
@@ -354,7 +365,8 @@ describe('MongoCursor', () => {
     it('Use next automatic', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -373,7 +385,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TEST_COLLECTION');
@@ -400,7 +412,8 @@ describe('MongoCursor', () => {
     it('Use next automatic (with hasNext)', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -419,7 +432,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TEST_COLLECTION');
@@ -447,7 +460,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "toArray" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -466,7 +480,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TestCollection');
@@ -492,7 +506,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "close" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -511,7 +526,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TEST_COLLECTION');
@@ -529,7 +544,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "close" function when cursor haven\'t Collection instance', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -548,7 +564,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "count function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -567,7 +584,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TEST_COLLECTION');
@@ -584,7 +601,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "forEach" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -603,7 +621,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TestCollection');
@@ -629,7 +647,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "forEach" function without Record class', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -656,7 +675,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "map" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -675,7 +695,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TestCollection');
@@ -698,7 +718,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "map" function without Record class', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -722,7 +743,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "filter" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -741,7 +763,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TestCollection');
@@ -760,7 +782,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "filter" function without Record class', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -780,7 +803,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "find" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -799,7 +823,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TestCollection');
@@ -822,7 +846,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "find" function without Record class', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -841,7 +866,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const dbCollection = db.collection("test_thames_travel");
       const nativeCursor = await dbCollection.find().sort({ id: 1 });
@@ -861,7 +886,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "compact" function when cursor haven\'t native cursor', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -881,7 +907,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "reduce" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -900,7 +927,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TestCollection');
@@ -922,7 +949,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "reduce" function without Record class', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -945,7 +973,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "first" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -964,7 +993,7 @@ describe('MongoCursor', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionInstance = TestCollection.new();
       testCollectionInstance.setName('TestCollection');
@@ -990,7 +1019,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "first" function without Record class', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1011,7 +1041,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "restoreObject" static function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1030,7 +1061,8 @@ describe('MongoCursor', () => {
     it('Check correctness logic of the "replicateObject" static function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};

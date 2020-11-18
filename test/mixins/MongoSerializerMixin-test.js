@@ -1,9 +1,11 @@
 const { assert } = require('chai');
 const sinon = require('sinon');
-const LeanES = require('@leansdk/leanes/src/leanes').default;
-const MongoStorage = require('../../../lib/index.js').default;
+const addonPath = process.env.ENV === 'build' ? "../../lib/index.dev" : "../../src/index.js";
+const MongoAddon = require(addonPath).default;
+const MapperAddon = require('@leansdk/leanes-mapper-addon/src').default;
+const LeanES = require('@leansdk/leanes/src').default;
 const {
-  initialize, partOf, nameBy, mixin, meta, method, attribute, plugin
+  initialize, partOf, nameBy, mixin, meta, method, plugin
 } = LeanES.NS;
 
 describe('MongoSerializerMixin', () => {
@@ -21,7 +23,8 @@ describe('MongoSerializerMixin', () => {
       facade = LeanES.NS.Facade.getInstance(KEY);
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -39,9 +42,9 @@ describe('MongoSerializerMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) number;
-        @attribute({ type: 'string' }) string;
-        @attribute({ type: 'boolean' }) boolean;
+        @Test.NS.attribute({ type: 'number' }) number;
+        @Test.NS.attribute({ type: 'string' }) string;
+        @Test.NS.attribute({ type: 'boolean' }) boolean;
 
         @method findRecordByName(asType) {
           return TestRecord;
@@ -49,8 +52,8 @@ describe('MongoSerializerMixin', () => {
       }
 
       @initialize
-      @mixin(Test.NS.MongoSerializerMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoSerializerMixin)
       class TestSerializer extends LeanES.NS.Collection {
         @nameBy static __filename = 'TestSerializer';
         @meta static object = {};
@@ -83,7 +86,8 @@ describe('MongoSerializerMixin', () => {
       facade = LeanES.NS.Facade.getInstance(KEY);
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -101,9 +105,9 @@ describe('MongoSerializerMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) number;
-        @attribute({ type: 'string' }) string;
-        @attribute({ type: 'boolean' }) boolean;
+        @Test.NS.attribute({ type: 'number' }) number;
+        @Test.NS.attribute({ type: 'string' }) string;
+        @Test.NS.attribute({ type: 'boolean' }) boolean;
 
         @method findRecordByName(asType) {
           return TestRecord;
@@ -111,8 +115,8 @@ describe('MongoSerializerMixin', () => {
       }
 
       @initialize
-      @mixin(Test.NS.MongoSerializerMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoSerializerMixin)
       class TestSerializer extends LeanES.NS.Collection {
         @nameBy static __filename = 'TestSerializer';
         @meta static object = {};

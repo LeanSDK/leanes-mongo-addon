@@ -1,28 +1,23 @@
-/*
-This file is part of leanrc-mongo-storage.
-
-leanrc-mongo-storage is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-leanrc-mongo-storage is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with leanrc-mongo-storage.  If not, see <https://www.gnu.org/licenses/>.
-*/
+// This file is part of leanes-mongo-addon.
+//
+// leanes-mongo-addon is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// leanes-mongo-addon is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with leanes-mongo-addon.  If not, see <https://www.gnu.org/licenses/>.
 
 // Миксин объявляет реализации для виртуальных методов основного Migration класса
 // миксин должен содержать нативный платформозависимый код для обращения к релаьной базе данных на понятном ей языке.
 
-
 export default (Module) => {
   const {
-    Migration,
-    Mixin,
     LogMessage: {
       SEND_TO_LOG,
       LEVELS,
@@ -42,7 +37,7 @@ export default (Module) => {
     });
   }
 
-  Module.defineMixin('MongoMigrationMixin', (BaseClass = Migration) => {
+  Module.defineMixin(__filename, (BaseClass) => {
     const { UP, DOWN, SUPPORTED_TYPES } = this.NS;
 
     @initializeMixin

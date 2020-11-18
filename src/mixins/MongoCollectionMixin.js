@@ -1,19 +1,17 @@
-/*
-This file is part of leanes-mongo-storage.
-
-leanes-mongo-storage is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-leanes-mongo-storage is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with leanes-mongo-storage.  If not, see <https://www.gnu.org/licenses/>.
-*/
+// This file is part of leanes-mongo-addon.
+//
+// leanes-mongo-addon is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// leanes-mongo-addon is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with leanes-mongo-addon.  If not, see <https://www.gnu.org/licenses/>.
 
 import { MongoClient } from 'mongodb';
 import { GridFSBucket } from 'mongodb';
@@ -23,7 +21,7 @@ export default (Module) => {
   const {
     MomentT, StreamT,
     RecordInterface, CursorInterface, QueryInterface,
-    Collection, Query, Cursor,
+    Query, Cursor,
     MongoCursor,
     Mixin,
     LogMessage: {
@@ -35,10 +33,10 @@ export default (Module) => {
     Utils: { _, co, jsonStringify, moment, assign }
   } = Module.NS;
 
-  const _connection = null;
-  const _consumers = null;
+  let _connection = null;
+  let _consumers = null;
 
-  Module.defineMixin('MongoCollectionMixin', (BaseClass = Collection) => {
+  Module.defineMixin(__filename, (BaseClass) => {
 
     const wrapReference = (value) => {
       if (_.isString(value)) {

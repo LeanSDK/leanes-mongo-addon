@@ -1,10 +1,12 @@
 const { assert } = require('chai');
 const sinon = require('sinon');
 const _ = require('lodash');
-const LeanES = require('@leansdk/leanes/src/leanes').default;
-const MongoStorage = require('../../../lib/index.js').default;
+const addonPath = process.env.ENV === 'build' ? "../../lib/index.dev" : "../../src/index.js";
+const MongoAddon = require(addonPath).default;
+const MapperAddon = require('@leansdk/leanes-mapper-addon/src').default;
+const LeanES = require('@leansdk/leanes/src').default;
 const {
-  initialize, partOf, nameBy, meta, constant, mixin, attribute, plugin
+  initialize, partOf, nameBy, meta, constant, mixin, plugin
 } = LeanES.NS;
 const {
   MongoClient,
@@ -60,7 +62,8 @@ describe('MongoMigrationMixin', () => {
     it('Create instance of class LeanES::Collection with MongoCollectionMixin', () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -68,17 +71,17 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'MongoCollection';
         @meta static object = {};
       }
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration';
         @meta static object = {};
@@ -106,7 +109,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "createCollection" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -114,9 +118,9 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -127,14 +131,14 @@ describe('MongoMigrationMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionName = 'examples';
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}
@@ -225,7 +229,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "addField" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -233,9 +238,9 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -246,8 +251,8 @@ describe('MongoMigrationMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       testCollection = TestCollection.new(testCollectionName, Object.assign({}), {
         delegate: 'TestRecord'
@@ -268,8 +273,8 @@ describe('MongoMigrationMixin', () => {
       await testCollection.push(testRecord);
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}
@@ -331,7 +336,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "addTimestamps" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -339,9 +345,9 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -352,8 +358,8 @@ describe('MongoMigrationMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
 
       const date = new Date();
@@ -365,8 +371,8 @@ describe('MongoMigrationMixin', () => {
       });
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}
@@ -418,7 +424,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "addIndex" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -426,9 +433,9 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -439,8 +446,8 @@ describe('MongoMigrationMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const col = await __db.collection(testCollectionFullName);
       await collection.insertOne({
@@ -450,8 +457,8 @@ describe('MongoMigrationMixin', () => {
       });
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}
@@ -513,7 +520,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "changeField" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -521,9 +529,9 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -595,8 +603,8 @@ describe('MongoMigrationMixin', () => {
       });
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}
@@ -648,7 +656,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "renameField" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -656,9 +665,9 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -669,8 +678,8 @@ describe('MongoMigrationMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const testCollectionName = 'tests';
       const testCollectionFullName = 'test_tests';
@@ -700,8 +709,8 @@ describe('MongoMigrationMixin', () => {
       let result = await (await __db.collection(testCollectionFullName)).findOne({ id: 'u7' });
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}
@@ -746,7 +755,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "changeCollection" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -754,17 +764,17 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
       }
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}
@@ -820,7 +830,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "renameCollection" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -828,17 +839,17 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
       }
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}
@@ -899,7 +910,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "renameIndex" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -907,17 +919,17 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
       }
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}
@@ -967,7 +979,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "dropCollection" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -975,9 +988,9 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -988,13 +1001,13 @@ describe('MongoMigrationMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}
@@ -1075,7 +1088,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "removeField" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1083,9 +1097,9 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1096,9 +1110,9 @@ describe('MongoMigrationMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
-        @attribute({ type: 'string' }) data1 = 'testdata1';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'string' }) data1 = 'testdata1';
       }
       testCollection = TestCollection.new(testCollectionName, Object.assign({}, {
         delegate: 'TestRecord'
@@ -1119,8 +1133,8 @@ describe('MongoMigrationMixin', () => {
       await testCollection.push(testRecord);
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}
@@ -1176,7 +1190,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "removeTimestamps" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1184,9 +1199,9 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1197,8 +1212,8 @@ describe('MongoMigrationMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const date = new Date();
       await (await __db.collection(testCollectionFullName)).insertOne({
@@ -1210,8 +1225,8 @@ describe('MongoMigrationMixin', () => {
       });
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}
@@ -1266,7 +1281,8 @@ describe('MongoMigrationMixin', () => {
     it('Check correctness logic of the "removeIndex" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1274,9 +1290,9 @@ describe('MongoMigrationMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1287,13 +1303,13 @@ describe('MongoMigrationMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
 
       @initialize
-      @mixin(Test.NS.MongoMigrationMixin)
       @partOf(Test)
+      @mixin(Test.NS.MongoMigrationMixin)
       class TestMigration extends Test.NS.Migration {
         @nameBy static __filename = 'TestMigration'
         @meta static object = {}

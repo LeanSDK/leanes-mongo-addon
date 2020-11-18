@@ -3,11 +3,12 @@ color: true
 extension:
   - 'js'
 file:
-  - './test/lib/iterator/MongoCursor-test.js'
+  - './test/iterator/MongoCursor-test.js'
 full-trace: true
 growl: true
 recursive: false
 # reporter: 'spec'
-require: '@babel/register'
+# require: '@babel/register'
+require: 'register-babel.js'
 # spec: 'test/**/**/*-test.js'
-watch: true
+watch: false

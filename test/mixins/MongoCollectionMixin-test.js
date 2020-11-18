@@ -2,11 +2,13 @@ const fs = require('fs');
 const crypto = require('crypto');
 const { expect, assert } = require('chai');
 const _ = require('lodash');
-const LeanES = require('@leansdk/leanes/src/leanes').default;
-const MongoStorage = require('../../../lib/index.js').default;
+const addonPath = process.env.ENV === 'build' ? "../../lib/index.dev" : "../../src/index.js";
+const MongoAddon = require(addonPath).default;
+const MapperAddon = require('@leansdk/leanes-mapper-addon/src').default;
+const LeanES = require('@leansdk/leanes/src').default;
 const {
   Query,
-  initialize, partOf, nameBy, meta, constant, mixin, property, method, attribute, action, plugin,
+  initialize, partOf, nameBy, meta, constant, mixin, property, method, plugin,
 } = LeanES.NS;
 const {
   MongoClient,
@@ -100,7 +102,8 @@ describe('MongoCollectionMixin', () => {
     it('Create instance of class LeanRC::Collection with MongoCollectionMixin', () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -108,9 +111,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -123,8 +126,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new();
       collection.setName('TEST_COLLECTION');
@@ -139,7 +142,8 @@ describe('MongoCollectionMixin', () => {
     it('Check "connection" property after creating instance of class LeanRC::Collection with MongoCollectionMixin', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -147,9 +151,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -162,8 +166,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -183,7 +187,8 @@ describe('MongoCollectionMixin', () => {
     it('Check "collection" property after creating instance of class LeanRC::Collection with MongoCollectionMixin', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -191,9 +196,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -206,8 +211,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -227,7 +232,8 @@ describe('MongoCollectionMixin', () => {
     it('Check "bucket" property after creating instance of class LeanRC::Collection with MongoCollectionMixin', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -235,9 +241,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -250,8 +256,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -267,7 +273,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "onRegister" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -275,9 +282,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -290,8 +297,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -305,7 +312,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of each function in the "operatorsMap" property', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -313,9 +321,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -328,8 +336,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -823,7 +831,8 @@ describe('MongoCollectionMixin', () => {
     it('Use the "parseFilter" method for simple parsed query', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -831,9 +840,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -846,8 +855,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -868,7 +877,8 @@ describe('MongoCollectionMixin', () => {
     it('Use the "parseFilter" method for parsed query', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -876,9 +886,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -891,8 +901,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -954,7 +964,8 @@ describe('MongoCollectionMixin', () => {
     it('Use the "parseFilter" method for parsed query with operator "$elemMatch" and implicitField:no', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -962,9 +973,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -977,8 +988,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1014,7 +1025,8 @@ describe('MongoCollectionMixin', () => {
     it('Use the "parseFilter" method for parsed query with operator "$elemMatch" and implicitField:yes', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1022,9 +1034,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1037,8 +1049,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1074,7 +1086,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "remove" record', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1082,9 +1095,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1097,8 +1110,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1140,7 +1153,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "count" records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1148,9 +1162,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1163,8 +1177,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1209,7 +1223,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "sum" records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1217,9 +1232,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1232,8 +1247,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1285,7 +1300,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "min" records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1293,9 +1309,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1308,8 +1324,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1366,7 +1382,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "max" records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1374,9 +1391,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1389,8 +1406,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1447,7 +1464,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "avg" records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1455,9 +1473,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1470,8 +1488,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1528,7 +1546,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "sort" records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1536,9 +1555,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1551,8 +1570,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1609,7 +1628,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "limit" records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1617,9 +1637,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1632,8 +1652,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1677,7 +1697,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "offset" records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1685,9 +1706,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1700,8 +1721,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1745,7 +1766,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "collect" records, with using "into"', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1753,9 +1775,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1768,8 +1790,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1834,7 +1856,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "having" records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1842,9 +1865,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1857,8 +1880,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1906,7 +1929,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for simple format "return" records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1914,9 +1938,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1929,8 +1953,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -1975,7 +1999,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for complex format "return" records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -1983,9 +2008,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -1998,8 +2023,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2048,7 +2073,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "return" with "distinct" format records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2056,9 +2082,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2071,8 +2097,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2124,7 +2150,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "executeQuery" method for "removeBy" record', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2132,9 +2159,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2147,8 +2174,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2170,18 +2197,18 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "parseQuery" method for "find" records', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
         @constant ROOT = __dirname;
       }
 
-
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2194,8 +2221,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2229,7 +2256,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "take" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2237,9 +2265,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2252,8 +2280,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2271,7 +2299,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "takeMany" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2279,9 +2308,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2294,8 +2323,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2314,7 +2343,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "takeAll" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2322,9 +2352,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2337,8 +2367,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2360,7 +2390,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "includes" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2368,9 +2399,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2383,8 +2414,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2402,7 +2433,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "length" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2410,9 +2442,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2425,8 +2457,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2442,7 +2474,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "push" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2450,9 +2483,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2465,8 +2498,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2494,7 +2527,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "override" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2502,9 +2536,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2517,8 +2551,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2543,7 +2577,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "patch" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2551,9 +2586,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2566,8 +2601,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       const collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2592,7 +2627,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "remove" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2600,9 +2636,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2615,8 +2651,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       let collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2648,7 +2684,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "createFileWriteStream" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2656,9 +2693,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2671,8 +2708,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       let collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2727,7 +2764,8 @@ describe('MongoCollectionMixin', () => {
     it('Check correctness logic of the "createFileWriteStream" function', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2735,9 +2773,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2750,8 +2788,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       let collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'
@@ -2790,7 +2828,8 @@ describe('MongoCollectionMixin', () => {
     it('', async () => {
 
       @initialize
-      @plugin(MongoStorage)
+      @plugin(MongoAddon)
+      @plugin(MapperAddon)
       class Test extends LeanES {
         @nameBy static __filename = 'Test';
         @meta static object = {};
@@ -2798,9 +2837,9 @@ describe('MongoCollectionMixin', () => {
       }
 
       @initialize
+      @partOf(Test)
       @mixin(Test.NS.QueryableCollectionMixin)
       @mixin(Test.NS.MongoCollectionMixin)
-      @partOf(Test)
       class TestCollection extends Test.NS.Collection {
         @nameBy static __filename = 'TestCollection';
         @meta static object = {};
@@ -2813,8 +2852,8 @@ describe('MongoCollectionMixin', () => {
       class TestRecord extends Test.NS.Record {
         @nameBy static __filename = 'TestRecord';
         @meta static object = {};
-        @attribute({ type: 'number' }) cid = -1;
-        @attribute({ type: 'string' }) data = '';
+        @Test.NS.attribute({ type: 'number' }) cid = -1;
+        @Test.NS.attribute({ type: 'string' }) data = '';
       }
       let collection = TestCollection.new('TEST_COLLECTION', Object.assign({}, {
         delegate: 'TestRecord'

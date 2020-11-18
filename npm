@@ -11,9 +11,9 @@ fi
 
 docker run --rm -it \
   -e APP_PATH=${APP_PATH} \
-  -v ${APP_PATH}/tmp:/tmp \
-  -v ${APP_PATH}:/usr/src/leanrc-mongo-storage \
-  -w /usr/src/leanrc-mongo-storage \
+  -v ${APP_PATH}:/usr/src/app \
+  -v ${APP_PATH}/.bash_history:/root/.bash_history \
+  -w /usr/src/app \
   node:14.9.0-buster \
   npm $@
 
