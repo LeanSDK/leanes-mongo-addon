@@ -15,6 +15,7 @@
 
 // import type { CollectionInterface } from '../interfaces/CollectionInterface';
 import type { CursorInterface } from '../interfaces/CursorInterface';
+import type { MongoNativeCursorInterface } from '../interfaces/MongoNativeCursorInterface';
 
 export default (Module) => {
   const {
@@ -27,12 +28,12 @@ export default (Module) => {
   @injectable()
   @partOf(Module)
   class MongoCursor<
-    D = {}, C = { normalize: (ahData: any) => Promise<D> }, T = D[]
-  > extends CoreObject implements CursorInterface<C, D> {
+    D = {}, C = { normalize: (ahData: any) => Promise<D> }, T = MongoNativeCursorInterface
+  > extends CoreObject implements CursorInterface<C, D, T> {
     @nameBy static __filename = __filename;
     @meta static object = {};
 
-    @property _cursor: ?object;
+    @property _cursor: ?T;
     @property _collection: ?C;
     @property get isClosed(): boolean {
       if (this._cursor != null) {
@@ -41,12 +42,12 @@ export default (Module) => {
       return true;
     }
 
-    @method setIterable(aoCursor: object): CursorInterface<C, D> {
+    @method setIterable(aoCursor: T): CursorInterface<C, D, T> {
       this._cursor = aoCursor;
       return this;
     }
 
-    @method setCollection(aoCollection: C): CursorInterface<C, D> {
+    @method setCollection(aoCollection: C): CursorInterface<C, D, T> {
       this._collection = aoCollection;
       return this;
     }
@@ -75,14 +76,7 @@ export default (Module) => {
     @method async next(): Promise<?D> {
       if (this._cursor == null) return;
       const data = await this._cursor.next();
-      switch (true) {
-        case (data == null):
-          return data;
-        case (this.collection != null):
-          return await this.collection.normalize(data)
-        default:
-          return data;
-      }
+      return await (this.collection != null ? this.collection.normalize(data) : data);
     }
 
     @method async hasNext(): Promise<boolean> {
@@ -96,9 +90,7 @@ export default (Module) => {
     }
 
     @method async count(): Promise<number> {
-      if (this._cursor == null) {
-        return 0;
-      }
+      if (this._cursor == null) return 0;
       return await (await this._cursor.count(true));
     }
 

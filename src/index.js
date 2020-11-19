@@ -18,21 +18,42 @@ import MongoCursor from './iterator/MongoCursor';
 import MongoCollectionMixin from './mixins/MongoCollectionMixin';
 import MongoSerializerMixin from './mixins/MongoSerializerMixin';
 import MongoMigrationMixin from './mixins/MongoMigrationMixin';
+import BucketCollectionMixin from './mixins/BucketCollectionMixin';
+import QueryableMongoCollectionMixin from './mixins/QueryableMongoCollectionMixin';
+
+import MongoAdapterMixin from './mixins/MongoAdapterMixin';
+import BucketAdapterMixin from './mixins/BucketAdapterMixin';
+import QueryableMongoAdapterMixin from './mixins/QueryableMongoAdapterMixin';
+
+import FacadePatch from './patches/FacadePatch';
 
 export default (Module) => {
   const {
-    initializeMixin, meta
+    initializeMixin, meta, method, patch
   } = Module.NS;
 
   return [ 'MongoAddon', (BaseClass) => {
+    @FacadePatch
+
+    @QueryableMongoAdapterMixin
+    @BucketAdapterMixin
+    @MongoAdapterMixin
+
+    @QueryableMongoCollectionMixin
+    @BucketCollectionMixin
+    @MongoCollectionMixin
+
     @MongoMigrationMixin
     @MongoSerializerMixin
-    @MongoCollectionMixin
     @MongoCursor
 
     @initializeMixin
     class Mixin extends BaseClass {
       @meta static object = {};
+
+      @method static including() {
+        patch(this.NS.FacadePatch)(this.NS.Facade);
+      }
     }
     return Mixin;
   }]

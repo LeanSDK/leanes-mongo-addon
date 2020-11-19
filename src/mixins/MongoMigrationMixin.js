@@ -69,8 +69,8 @@ export default (Module) => {
       @method async addField(
         collectionName: string,
         fieldName: string,
-        options: $Values<SUPPORTED_TYPES> | {
-          type: $Values<SUPPORTED_TYPES>, 'default': any
+        options: $Keys<typeof SUPPORTED_TYPES> | {
+          type: $Keys<typeof SUPPORTED_TYPES>, 'default': any
         }
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
@@ -161,8 +161,8 @@ export default (Module) => {
       @method async changeField(
         collectionName: string,
         fieldName: string,
-        options: $Values<SUPPORTED_TYPES> | {
-          type: $Values<SUPPORTED_TYPES>
+        options: $Keys<typeof SUPPORTED_TYPES> | {
+          type: $Keys<typeof SUPPORTED_TYPES>
         } = {}
       ): Promise<void> {
         const {

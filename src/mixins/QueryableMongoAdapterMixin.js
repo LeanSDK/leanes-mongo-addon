@@ -13,32 +13,35 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with leanes-mongo-addon.  If not, see <https://www.gnu.org/licenses/>.
 
-import type { RecordInterface } from '../interfaces/RecordInterface';
-import type { CursorInterface } from '../interfaces/CursorInterface';
+// import type { RecordInterface } from '../interfaces/RecordInterface';
+// import type { CursorInterface } from '../interfaces/CursorInterface';
 import type { QueryInterface } from '../interfaces/QueryInterface';
+import type { MongoNativeCursorInterface } from '../interfaces/MongoNativeCursorInterface';
 
 import type { MomentT } from '../types/MomentT';
-import type { StreamT } from '../types/StreamT';
+// import type { StreamT } from '../types/StreamT';
 
-import { MongoClient } from 'mongodb';
-import { GridFSBucket } from 'mongodb';
+// import { MongoClient } from 'mongodb';
+// import { GridFSBucket } from 'mongodb';
 import Parser from 'mongo-parse'; //mongo-parse@2.0.2
+
+const hasProp = {}.hasOwnProperty;
 
 export default (Module) => {
   const {
     Pipes,
-    Query, Cursor,
-    MongoCursor,
+    // Query,
+    // Cursor, MongoCursor,
     initializeMixin, meta, property, method,
-    Utils: { _, jsonStringify, moment, assign }
+    Utils: { _, jsonStringify, moment, assign, assert }
   } = Module.NS;
   const { LogMessage } = Pipes.NS;
   const {
     SEND_TO_LOG, LEVELS, DEBUG
   } = LogMessage;
 
-  let _connection = null;
-  let _consumers = null;
+  // let _connection = null;
+  // let _consumers = null;
 
   const wrapReference = (value) => {
     if (_.isString(value)) {
@@ -83,159 +86,142 @@ export default (Module) => {
       };
     }
   }
+
   Module.defineMixin(__filename, (BaseClass) => {
     @initializeMixin
     class Mixin<
-      D = RecordInterface
+      R = Class<*>, T = object, A = MongoNativeCursorInterface
     > extends BaseClass {
       @meta static object = {};
 
-      @property _collection: ?Promise<T>;
-      @property _bucket: ?Promise<T>;
+      // @property _collection: ?Promise<T>;
 
-      @property get connection(): Promise<T> {
-        const self = this;
-        if (_connection == null) {
-          _connection = async function () {
-            let credentials = '';
-            const mongodb = self.getData().mongodb != null ? self.getData().mongodb : self.configs.mongodb;
-            const { username, password, host, port, dbName } = mongodb;
-            if (username && password) {
-              credentials = `${username}:${password}@`;
-            }
-            const db_url = `mongodb://${credentials}${host}:${port}/${dbName}?authSource=admin`;
-            const connection = await MongoClient.connect(db_url);
-            return connection;
-          };
-        }
-        return _connection;
-      }
+      // @property get connection(): Promise<T> {
+      //   const self = this;
+      //   if (_connection == null) {
+      //     _connection = async function () {
+      //       let credentials = '';
+      //       const mongodb = self.getData().mongodb != null ? self.getData().mongodb : self.configs.mongodb;
+      //       const { username, password, host, port, dbName } = mongodb;
+      //       if (username && password) {
+      //         credentials = `${username}:${password}@`;
+      //       }
+      //       const db_url = `mongodb://${credentials}${host}:${port}/${dbName}?authSource=admin`;
+      //       const connection = await MongoClient.connect(db_url);
+      //       return connection;
+      //     };
+      //   }
+      //   return _connection;
+      // }
 
-      @property get collection(): Promise<T> {
-        const self = this;
-        if (this._collection == null) {
-          this._collection = async function () {
-            const connection = await self.connection;
-            const name = self.collectionFullName();
-            await new Promise((resolve, reject) => {
-              connection.collection(name, { strict: true }, (err, col) => {
-                err != null ? reject(err) : resolve(col);
-              });
-            });
-          };
-        }
-        return this._collection;
-      }
+      // @property get collection(): Promise<T> {
+      //   const self = this;
+      //   if (this._collection == null) {
+      //     this._collection = async function () {
+      //       const connection = await self.connection;
+      //       const name = self.collectionFullName();
+      //       await new Promise((resolve, reject) => {
+      //         connection.collection(name, { strict: true }, (err, col) => {
+      //           err != null ? reject(err) : resolve(col);
+      //         });
+      //       });
+      //     };
+      //   }
+      //   return this._collection;
+      // }
 
-      @property get bucket(): Promise<T> {
-        const self = this;
-        if (this._bucket == null) {
-          this._bucket = async function () {
-            const mongodb = self.getData().mongodb != null ? self.getData().mongodb : self.configs.mongodb;
-            const { dbName } = mongodb;
-            const connection = await self.connection;
-            const voDB = connection.db(`${dbName}_fs`);
-            return new GridFSBucket(voDB, {
-              chunkSizeBytes: 64512,
-              bucketName: 'binary-store'
-            });
-          };
-        }
-        return this._bucket;
-      }
+      // @method onRegister() {
+      //   super(...arguments);
+      //   (() => {
+      //     return this.connection;
+      //   })();
+      //   _consumers != null ? _consumers : 0;
+      //   _consumers++;
+      // }
+      //
+      // @method async onRemove() {
+      //   super(...arguments);
+      //   _consumers--;
+      //   if (_consumers == 0) {
+      //     const connection = await _connection;
+      //     await connection.close(true);
+      //   }
+      // }
 
-      @method onRegister() {
-        super(...arguments);
-        (() => {
-          return this.connection;
-        })();
-        _consumers != null ? _consumers : 0;
-        _consumers++;
-      }
+      // @method async push(aoRecord: RecordInterface): RecordInterface {
+      //   const collection = await this.collection;
+      //   // const ipoMultitonKey = this.constructor.instanceVariables['~multitonKey'].pointer;
+      //   const stats = await collection.stats();
+      //   const snapshot = await this.serialize(aoRecord);
+      //   const raw1 = await collection.findOne({
+      //     id: {
+      //       $eq: snapshot.id
+      //     }
+      //   });
+      //   this.send(
+      //     SEND_TO_LOG,
+      //     `QueryableMongoAdapterMixin::push ns = ${stats.ns}, snapshot = ${jsonStringify(snapshot)}`,
+      //     LEVELS[DEBUG]
+      //   );
+      //   await collection.insertOne(snapshot, {
+      //     w: 'majority',
+      //     j: true,
+      //     wtimeout: 500
+      //   });
+      //   return await this.normalize(await collection.findOne({
+      //     id: {
+      //       $eq: snapshot.id
+      //     }
+      //   }));
+      // }
 
-      @method async onRemove() {
-        super(...arguments);
-        _consumers--;
-        if (_consumers == 0) {
-          const connection = await _connection;
-          await connection.close(true);
-        }
-      }
+      // @method async remove(id: string | number) {
+      //   const collection = await this.collection;
+      //   const stats = await collection.stats();
+      //   this.send(
+      //     SEND_TO_LOG,
+      //     `QueryableMongoAdapterMixin::remove ns = ${stats.ns}, id = ${id}`,
+      //     LEVELS[DEBUG]
+      //   );
+      //   await collection.deleteOne({
+      //     id: {
+      //       $eq: id
+      //     }
+      //   }, {
+      //     w: 'majority',
+      //     j: true,
+      //     wtimeout: 500
+      //   });
+      // }
 
-      @method async push(aoRecord: RecordInterface): RecordInterface {
-        const collection = await this.collection;
-        // const ipoMultitonKey = this.constructor.instanceVariables['~multitonKey'].pointer;
-        const stats = await collection.stats();
-        const snapshot = await this.serialize(aoRecord);
-        const raw1 = await collection.findOne({
-          id: {
-            $eq: snapshot.id
-          }
-        });
-        this.send(
-          SEND_TO_LOG,
-          `MongoCollectionMixin::push ns = ${stats.ns}, snapshot = ${jsonStringify(snapshot)}`,
-          LEVELS[DEBUG]
-        );
-        await collection.insertOne(snapshot, {
-          w: 'majority',
-          j: true,
-          wtimeout: 500
-        });
-        return await this.normalize(await collection.findOne({
-          id: {
-            $eq: snapshot.id
-          }
-        }));
-      }
+      // @method async take(id: string | number): ?RecordInterface {
+      //   const collection = await this.collection;
+      //   const stats = await collection.stats();
+      //   this.send(
+      //     SEND_TO_LOG,
+      //     `QueryableMongoAdapterMixin::take ns = ${stats.ns}, id = ${id}`,
+      //     LEVELS[DEBUG]
+      //   );
+      //   const rawRecord = await collection.findOne({
+      //     id: {
+      //       $eq: id
+      //     }
+      //   });
+      //   if (rawRecord != null) {
+      //     return await this.normalize(rawRecord);
+      //   }
+      // }
 
-      @method async remove(id: string | number) {
-        const collection = await this.collection;
-        const stats = await collection.stats();
-        this.send(
-          SEND_TO_LOG,
-          `MongoCollectionMixin::remove ns = ${stats.ns}, id = ${id}`,
-          LEVELS[DEBUG]
-        );
-        await collection.deleteOne({
-          id: {
-            $eq: id
-          }
-        }, {
-          w: 'majority',
-          j: true,
-          wtimeout: 500
-        });
-      }
-
-      @method async take(id: string | number): ?RecordInterface {
-        const collection = await this.collection;
-        const stats = await collection.stats();
-        this.send(
-          SEND_TO_LOG,
-          `MongoCollectionMixin::take ns = ${stats.ns}, id = ${id}`,
-          LEVELS[DEBUG]
-        );
-        const rawRecord = await collection.findOne({
-          id: {
-            $eq: id
-          }
-        });
-        if (rawRecord != null) {
-          return await this.normalize(rawRecord);
-        }
-      }
-
-      @method async takeBy(query: object, options: ?object = {}) {
+      @method async takeBy(acRecord: R, query: object, options: ?object = {}): Promise<A> {
         const collection = await this.collection;
         const stats = await collection.stats();
         const voQuery = this.parseFilter(Parser.parse(query));
         this.send(
           SEND_TO_LOG,
-          `MongoCollectionMixin::takeBy ns = ${stats.ns}, voQuery = ${jsonStringify(voQuery)}`,
+          `QueryableMongoAdapterMixin::takeBy ns = ${stats.ns}, voQuery = ${jsonStringify(voQuery)}`,
           LEVELS[DEBUG]
         );
-        const voNativeCursor = await collection.find(voQuery);
+        let voNativeCursor = await collection.find(voQuery);
         const vnLimit = options.$limit;
         if (vnLimit != null) {
           voNativeCursor = voNativeCursor.limit(vnLimit);
@@ -246,112 +232,113 @@ export default (Module) => {
         }
         const voSort = options.$sort;
         if (voSort != null) {
-          const voNativeCursor = voNativeCursor.sort(voSort.reduce((result, item) => {
+          voNativeCursor = voNativeCursor.sort(voSort.reduce((result, item) => {
             for (const asRef in item) {
-              if (!{}.hasOwnProperty.call(item, asRef)) continue;
+              if (!hasProp.call(item, asRef)) continue;
               const asSortDirect = item[asRef];
               result[wrapReference(asRef)] = asSortDirect === 'ASC' ? 1 : -1;
             }
             return result;
           }), {});
         }
-        return MongoCursor.new(this, voNativeCursor);
+        return voNativeCursor;
+        // return MongoCursor.new(this, voNativeCursor);
       }
 
-      @method async takeMany(ids: [string | number]): CursorInterface {
-        const collection = await this.collection;
-        const stats = await collection.stats();
-        this.send(
-          SEND_TO_LOG,
-          `MongoCollectionMixin::takeMany ns = ${stats.ns}, ids = ${jsonStringify(ids)}`,
-          LEVELS[DEBUG]
-        );
-        const voNativeCursor = await collection.find({
-          id: {
-            $in: ids
-          }
-        });
-        return MongoCursor.new(this, voNativeCursor);
-      }
+      // @method async takeMany(ids: [string | number]): CursorInterface {
+      //   const collection = await this.collection;
+      //   const stats = await collection.stats();
+      //   this.send(
+      //     SEND_TO_LOG,
+      //     `QueryableMongoAdapterMixin::takeMany ns = ${stats.ns}, ids = ${jsonStringify(ids)}`,
+      //     LEVELS[DEBUG]
+      //   );
+      //   const voNativeCursor = await collection.find({
+      //     id: {
+      //       $in: ids
+      //     }
+      //   });
+      //   return MongoCursor.new(this, voNativeCursor);
+      // }
 
-      @method async takeAll(): CursorInterface {
-        const collection = await this.collection;
-        const stats = await collection.stats();
-        this.send(
-          SEND_TO_LOG,
-          `MongoCollectionMixin::takeAll ns = ${stats.ns}`,
-          LEVELS[DEBUG]
-        );
-        const voNativeCursor = await collection.find();
-        return MongoCursor.new(this, voNativeCursor);
-      }
+      // @method async takeAll(): CursorInterface {
+      //   const collection = await this.collection;
+      //   const stats = await collection.stats();
+      //   this.send(
+      //     SEND_TO_LOG,
+      //     `QueryableMongoAdapterMixin::takeAll ns = ${stats.ns}`,
+      //     LEVELS[DEBUG]
+      //   );
+      //   const voNativeCursor = await collection.find();
+      //   return MongoCursor.new(this, voNativeCursor);
+      // }
 
-      @method async override(id: string | number, aoRecord: RecordInterface): RecordInterface {
-        const collection = await this.collection;
-        const snapshot = await this.serialize(aoRecord);
-        const stats = await collection.stats();
-        this.send(
-          SEND_TO_LOG,
-          `MongoCollectionMixin::override ns = ${stats.ns}, id = ${id}, snapshot = ${jsonStringify(snapshot)}`,
-          LEVELS[DEBUG]
-        );
-        await collection.updateOne({
-          id: {
-            $eq: id
-          }
-        }, {
-          $set: snapshot
-        }, {
-          multi: true,
-          w: 'majority',
-          j: true,
-          wtimeout: 500
-        });
-        const rawRecord = await collection.findOne({
-          id: {
-            $eq: id
-          }
-        });
-        return await this.normalize(rawRecord);
-      }
+      // @method async override(id: string | number, aoRecord: RecordInterface): RecordInterface {
+      //   const collection = await this.collection;
+      //   const snapshot = await this.serialize(aoRecord);
+      //   const stats = await collection.stats();
+      //   this.send(
+      //     SEND_TO_LOG,
+      //     `QueryableMongoAdapterMixin::override ns = ${stats.ns}, id = ${id}, snapshot = ${jsonStringify(snapshot)}`,
+      //     LEVELS[DEBUG]
+      //   );
+      //   await collection.updateOne({
+      //     id: {
+      //       $eq: id
+      //     }
+      //   }, {
+      //     $set: snapshot
+      //   }, {
+      //     multi: true,
+      //     w: 'majority',
+      //     j: true,
+      //     wtimeout: 500
+      //   });
+      //   const rawRecord = await collection.findOne({
+      //     id: {
+      //       $eq: id
+      //     }
+      //   });
+      //   return await this.normalize(rawRecord);
+      // }
 
-      @method async includes(id: string | number): boolean {
-        const collection = await this.collection;
-        const stats = await collection.stats();
-        this.send(
-          SEND_TO_LOG,
-          `MongoCollectionMixin::includes ns = ${stats.ns}, id = ${id}`,
-          LEVELS[DEBUG]
-        );
-        return (await collection.findOne({
-          id: {
-            $eq: id
-          }
-        })) != null;
-      }
+      // @method async includes(id: string | number): boolean {
+      //   const collection = await this.collection;
+      //   const stats = await collection.stats();
+      //   this.send(
+      //     SEND_TO_LOG,
+      //     `QueryableMongoAdapterMixin::includes ns = ${stats.ns}, id = ${id}`,
+      //     LEVELS[DEBUG]
+      //   );
+      //   return (await collection.findOne({
+      //     id: {
+      //       $eq: id
+      //     }
+      //   })) != null;
+      // }
 
-      @method async exists(query: object): boolean {
+      @method async exists(acRecord: R, query: object): Promise<boolean> {
         const collection = await this.collection;
         const stats = await collection.stats();
         const voQuery = this.parseFilter(Parser.parse(query));
         this.send(
           SEND_TO_LOG,
-          `MongoCollectionMixin::exists ns = ${stats.ns}, voQuery = ${jsonStringify(voQuery)}`,
+          `QueryableMongoAdapterMixin::exists ns = ${stats.ns}, voQuery = ${jsonStringify(voQuery)}`,
           LEVELS[DEBUG]
         );
         return (await collection.count(voQuery)) !== 0;
       }
 
-      @method async length(): number {
-        const collection = await this.collection;
-        const stats = await collection.stats();
-        this.send(
-          SEND_TO_LOG,
-          `MongoCollectionMixin::length ns = ${stats.ns}`,
-          LEVELS[DEBUG]
-        );
-        return stats.count;
-      }
+      // @method async length(): number {
+      //   const collection = await this.collection;
+      //   const stats = await collection.stats();
+      //   this.send(
+      //     SEND_TO_LOG,
+      //     `QueryableMongoAdapterMixin::length ns = ${stats.ns}`,
+      //     LEVELS[DEBUG]
+      //   );
+      //   return stats.count;
+      // }
 
       // @TODO Нужно добавить описание входных параметров опреторам и соответственно их проверку
       @property operatorsMap: { [key: string]: Function } = {
@@ -523,16 +510,12 @@ export default (Module) => {
         }
       }
 
-      @method async parseQuery(aoQuery: object | QueryInterface): object | string | QueryInterface {
-        if (aoQuery.$join != null) {
-          throw new Error('`$join` not available for Mongo queries');
-        }
-        if (aoQuery.$let != null) {
-          throw new Error('`$let` not available for Mongo queries');
-        }
-        if (aoQuery.$aggregate != null) {
-          throw new Error('`$aggregate` not available for Mongo queries');
-        }
+      @method async parseQuery(
+        acRecord: R, aoQuery: object | QueryInterface
+      ): Promise<object | string | QueryInterface> {
+        assert(aoQuery.$join == null, '`$join` not available for Mongo queries');
+        assert(aoQuery.$let == null, '`$let` not available for Mongo queries');
+        assert(aoQuery.$aggregate == null, '`$aggregate` not available for Mongo queries');
 
         const voQuery = {};
         const aggUsed = null;
@@ -563,7 +546,7 @@ export default (Module) => {
                 voQuery.pipeline.push({
                   $sort: voSort.reduce((result, item) => {
                     for (const asRef in item) {
-                      if (!{}.hasOwnProperty.call(item, asRef)) continue;
+                      if (!hasProp.call(item, asRef)) continue;
                       const asSortDirect = item[asRef];
                       result[wrapReference(asRef)] = asSortDirect === 'ASC' ? 1 : -1;
                     }
@@ -610,7 +593,7 @@ export default (Module) => {
                   voQuery.pipeline.push({
                     $sort: voSort.reduce((result, item) => {
                       for (const asRef in item) {
-                        if (!{}.hasOwnProperty.call(item, asRef)) continue;
+                        if (!hasProp.call(item, asRef)) continue;
                         const asSortDirect = item[asRef];
                         result[wrapReference(asRef)] = asSortDirect === 'ASC' ? 1 : -1;
                       }
@@ -655,7 +638,7 @@ export default (Module) => {
                 voQuery.pipeline.push({
                   $sort: voSort.reduce((result, item) => {
                     for (const asRef in item) {
-                      if (!{}.hasOwnProperty.call(item, asRef)) continue;
+                      if (!hasProp.call(item, asRef)) continue;
                       const asSortDirect = item[asRef];
                       result[wrapReference(asRef)] = asSortDirect === 'ASC' ? 1 : -1;
                     }
@@ -683,7 +666,7 @@ export default (Module) => {
                 isCustomReturn = true;
                 const collect = {};
                 for (const asRef in item) {
-                  if (!{}.hasOwnProperty.call(item, asRef)) continue;
+                  if (!hasProp.call(item, asRef)) continue;
                   const aoValue = item[asRef];
                   ((asRef, aoValue) => {
                     collect[wrapReference(asRef)] = wrapReference(aoValue);
@@ -806,7 +789,7 @@ export default (Module) => {
                               const vhObj = {};
                               const projectObj = {};
                               for (key in voReturn) {
-                                if ({}.hasOwnProperty.call(voReturn, key)) continue;
+                                if (hasProp.call(voReturn, key)) continue;
                                 const value = voReturn[key];
                                 ((key, value) => {
                                   vhObj[key] = `${wrapReference(value)}`;
@@ -842,12 +825,14 @@ export default (Module) => {
         return voQuery;
       }
 
-      @method async executeQuery(aoQuery: object | string, options: QueryInterface): CursorInterface {
+      @method async executeQuery(
+        acRecord: R, aoQuery: object | string | QueryInterface
+      ): Promise<?A> {
         const collection = await this.collection;
         const stats = await collection.stats();
         this.send(
           SEND_TO_LOG,
-          `MongoCollectionMixin::executeQuery ns = ${stats.ns}, aoQuery = ${jsonStringify(aoQuery)}`,
+          `QueryableMongoAdapterMixin::executeQuery ns = ${stats.ns}, aoQuery = ${jsonStringify(aoQuery)}`,
           LEVELS[DEBUG]
         );
 
@@ -922,70 +907,16 @@ export default (Module) => {
             }, null);
             break;
         }
+        return voNativeCursor;
 
-        let voCursor = null;
-
-        if (aoQuery.isCustomReturn) {
-          voCursor = voNativeCursor != null ? MongoCursor.new(null, voNativeCursor) : Cursor.new(null, []);
-        } else {
-          voCursor = MongoCursor.new(this, voNativeCursor);
-        }
-        return voCursor;
-      }
-
-      @method async createFileWriteStream(opts: { id: string }, metadata: ?object = {}): StreamT {
-        const bucket = await this.bucket;
-        this.send(
-          SEND_TO_LOG,
-          `MongoCollectionMixin::createFileWriteStream opts = ${jsonStringify(opts)}`,
-          LEVELS[DEBUG]
-        );
-        const mongodb = this.getData().mongodb != null ? this.getData().mongodb : this.configs.mongodb;
-        const { dbName } = mongodb;
-        const metadata = assign({}, { dbName }, metadata);
-        return bucket.openUploadStream(opts._id, { metadata });
-      }
-
-      @method async createFileReadStream(opts: { id: string }): ?StreamT {
-        const bucket = await this.bucket;
-        this.send(
-          SEND_TO_LOG,
-          `MongoCollectionMixin::createFileReadStream opts = ${jsonStringify(opts)}`,
-          LEVELS[DEBUG]
-        );
-        if (await this.fileExists(opts)) {
-          return bucket.openDownloadStreamByName(opts._id, {});
-        } else {
-          return;
-        }
-      }
-
-      @method async fileExists(opts: { id: string }): boolean {
-        const bucket = await this.bucket;
-        this.send(
-          SEND_TO_LOG,
-          `MongoCollectionMixin::fileExists opts = ${jsonStringify(opts)}`,
-          LEVELS[DEBUG]
-        );
-        return await (await bucket.find({
-          filename: opts._id
-        }).hasNext());
-      }
-
-      @method async removeFile(opts: { id: string }) {
-        const bucket = await this.bucket;
-        this.send(
-          SEND_TO_LOG,
-          `MongoCollectionMixin::removeFile opts = ${jsonStringify(opts)}`,
-          LEVELS[DEBUG]
-        );
-        const cursor = await bucket.find({
-          filename: opts._id
-        });
-        const file = yield cursor.next();
-        if (file != null) {
-          await bucket.delete(file._id);
-        }
+        // let voCursor = null;
+        //
+        // if (aoQuery.isCustomReturn) {
+        //   voCursor = voNativeCursor != null ? MongoCursor.new(null, voNativeCursor) : Cursor.new(null, []);
+        // } else {
+        //   voCursor = MongoCursor.new(this, voNativeCursor);
+        // }
+        // return voCursor;
       }
     }
   });
