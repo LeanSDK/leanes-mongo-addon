@@ -976,6 +976,6 @@ export default (Module) => {
       //   }
       // }
     }
+    return Mixin;
   });
-  return Mixin;
 }

@@ -921,6 +921,6 @@ export default (Module) => {
         // return voCursor;
       }
     }
+    return Mixin;
   });
-  return Mixin;
 }
