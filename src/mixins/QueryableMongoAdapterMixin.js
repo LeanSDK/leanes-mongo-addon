@@ -61,7 +61,7 @@ export default (Module) => {
     aoIntervalSize: ('day' | 'week' | 'month' | 'year'),
     aoDirect: boolean
   ): object => {
-    const aoInterval = aoInterval.utc();
+    aoInterval = aoInterval.utc();
     const voIntervalStart = aoInterval.startOf(aoIntervalSize).toISOString();
     const voIntervalEnd = aoInterval.clone().endOf(aoIntervalSize).toISOString();
     if (aoDirect) {
@@ -480,32 +480,33 @@ export default (Module) => {
       }
 
       @method parseFilter(
-        {
-          field, parts = [], operator, operand, implicitField
-        }: {
+        data: {
           field: ?string, parts: ?object[], operator: ?string, operand: ?any, implicitField: ?boolean
         }
       ): object {
+        const {
+          field, parts = [], operator, operand, implicitField
+        } = data;
         if (field != null && operator !== '$elemMatch' && parts.length === 0) {
           const customFilter = this.delegate.customFilters[field];
           if (customFilter != null && customFilter[operator] != null) {
             const customFilterFunc = customFilter[operator];
-            customFilterFunc.call(this, operand);
+            return customFilterFunc.call(this, operand);
           } else {
-            this.operatorsMap[operator](field, operand);
+            return this.operatorsMap[operator](field, operand);
           }
         } else {
           if (field != null && operator === '$elemMatch') {
             this.operatorsMap[operator](field, parts.reduce((result, part) => {
               if (implicitField && !(part.field != null) && (!(part.parts != null) || part.parts.length === 0)) {
                 const subquery = this.operatorsMap[part.operator]('temporaryField', part.operand);
-                Object.assign(result, subquery.temporaryField)
+                return Object.assign(result, subquery.temporaryField)
               } else {
-                Object.assign(result, this.parseFilter(part));
+                return Object.assign(result, this.parseFilter(part));
               }
             }, {}))
           } else {
-            this.operatorsMap[operator != null ? operator : '$and'](parts.map(this.parseFilter.bind(this)));
+            return this.operatorsMap[operator != null ? operator : '$and'](parts.map(this.parseFilter.bind(this)));
           }
         }
       }
@@ -839,14 +840,14 @@ export default (Module) => {
         let voNativeCursor = null;
 
         switch (aoQuery.queryType) {
-          case 'query':
+          case 'query': {
             voNativeCursor = await collection.aggregate(aoQuery.pipeline, {
               cursor: {
                 batchSize: 1
               }
             });
             break;
-          case 'patchBy':
+          } case 'patchBy': {
             const voPipeline = aoQuery.pipeline;
             voPipeline.push({
               $project: {
@@ -877,7 +878,7 @@ export default (Module) => {
               wtimeout: 500
             }, null);
             break;
-          case 'removeBy':
+          } case 'removeBy': {
             const voPipeline = aoQuery.pipeline;
             voPipeline.push({
               $project: {
@@ -906,6 +907,7 @@ export default (Module) => {
               wtimeout: 500
             }, null);
             break;
+          }
         }
         return voNativeCursor;
 

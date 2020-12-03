@@ -936,7 +936,7 @@ export default (Module) => {
       //   return voCursor;
       // }
 
-      @method async createFileWriteStream(opts: { filename: string }, metadata: ?object = {}): Promise<StreamT> {
+      @method async createFileWriteStream(opts: { filename: string }, meta: ?object = {}): Promise<StreamT> {
         const bucket = await this.bucket;
         this.send(
           SEND_TO_LOG,
@@ -945,7 +945,7 @@ export default (Module) => {
         );
         // const mongodb = this.getData().mongodb != null ? this.getData().mongodb : this.configs.mongodb;
         // const { dbName } = mongodb;
-        const metadata = assign({}, { dbName: this.dbName }, metadata);
+        const metadata = assign({}, { dbName: this.dbName }, meta);
         return bucket.openUploadStream(opts.filename, { metadata });
       }
 
@@ -985,7 +985,7 @@ export default (Module) => {
         const cursor = await bucket.find({
           filename: opts.filename
         });
-        const file = yield cursor.next();
+        const file = await cursor.next();
         if (file != null) {
           await bucket.delete(file._id);
         }

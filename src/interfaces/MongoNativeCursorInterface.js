@@ -15,7 +15,7 @@
 
 export interface MongoNativeCursorInterface {
   isClosed(): boolean;
-  next(): Promise<?object>
-  hasNext(): Promise<boolean>
-  close(): Promise<void>
+  next(): Promise<?object>;
+  hasNext(): Promise<boolean>;
+  close(): Promise<void>;
 }

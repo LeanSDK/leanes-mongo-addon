@@ -12,14 +12,13 @@ const appRoot = __dirname + '/src';
 
 const extensions = [".ts", ".js"];
 
-// TODO: needs to improve this config for precompilation src files to nodejs runtime (not browser)
-
 const dev = new Rollup(appRoot, {
   inputFiles: ["**/*.js"],
   annotation: "leanes-mongo-addon",
   rollup: {
     input: __dirname + "/src/index.js",
     external: [
+      'mongodb', 'mongo-parse',
       'crypto',
       'net',
       'dns',
@@ -27,7 +26,7 @@ const dev = new Rollup(appRoot, {
       'buffer',
       'events',
       'querystring',
-      'url'
+      'url',
     ],
     plugins: [
       json({
@@ -40,7 +39,7 @@ const dev = new Rollup(appRoot, {
       }),
       nodeResolve({
         extensions,
-        browser: true,
+        browser: false,
         preferBuiltins: false,
       }),
       commonjs({
@@ -52,7 +51,8 @@ const dev = new Rollup(appRoot, {
         sourceMap: true,
         exclude: "node_modules/**",
         presets: [
-          "@babel/preset-env"
+          // "@babel/preset-env"
+          ["@babel/preset-env", {targets: {node: '14.9'}, loose: true, useBuiltIns: false}]
         ],
         plugins: [
           "@babel/plugin-syntax-flow",
@@ -91,6 +91,7 @@ const prod = new Rollup(appRoot, {
   rollup: {
     input: __dirname + "/src/index.js",
     external: [
+      'mongodb', 'mongo-parse',
       'crypto',
       'net',
       'dns',
@@ -98,7 +99,7 @@ const prod = new Rollup(appRoot, {
       'buffer',
       'events',
       'querystring',
-      'url'
+      'url',
     ],
     plugins: [
       json({
@@ -111,7 +112,7 @@ const prod = new Rollup(appRoot, {
       }),
       nodeResolve({
         extensions,
-        browser: true,
+        browser: false,
         preferBuiltins: false,
       }),
       commonjs({
@@ -120,10 +121,11 @@ const prod = new Rollup(appRoot, {
       }),
       babel({
         extensions,
-        sourceMap: true,
+        sourceMap: false,
         exclude: "node_modules/**",
         presets: [
-          "@babel/preset-env"
+          // "@babel/preset-env"
+          ["@babel/preset-env", {targets: {node: '14.9'}, loose: true, useBuiltIns: false}]
         ],
         plugins: [
           "@babel/plugin-syntax-flow",

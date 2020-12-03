@@ -193,7 +193,7 @@ export default (Module) => {
       // }
 
       @method onRegister() {
-        super(...arguments);
+        super.onRegister(... arguments);
         const { host, port, dbName } = this;
         (() => {
           return this.connection;
@@ -205,7 +205,7 @@ export default (Module) => {
       }
 
       @method async onRemove() {
-        super(...arguments);
+        super.onRemove(...arguments);
         const { host, port, dbName } = this;
         let count = _consumers.get(`${host}:${port}/${dbName}`);
         count--;
