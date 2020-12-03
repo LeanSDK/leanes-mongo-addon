@@ -31,7 +31,7 @@
     "mongodb"
   ],
   "devDependencies": {
-    "@leansdk/leanes": "https://github.com/LeanSDK/leanes.git#feature/building_improveds",
+    "@leansdk/leanes": "https://github.com/LeanSDK/leanes.git#feature/application_module_improvements",
     "@leansdk/leanes-mapper-addon": "https://github.com/LeanSDK/leanes-mapper-addon.git",
     "@leansdk/leanes-queryable-addon": "https://github.com/LeanSDK/leanes-queryable-addon.git",
     "@babel/cli": "^7.0.0",

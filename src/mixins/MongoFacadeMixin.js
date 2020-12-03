@@ -15,21 +15,21 @@
 
 export default (Module) => {
   const {
-    initializePatch, meta, method,
+    initializeMixin, meta, method,
   } = Module.NS;
 
-  Module.definePatch(__filename, (BaseClass) => {
-    @initializePatch
-    class Patch extends BaseClass {
+  Module.defineMixin(__filename, (BaseClass) => {
+    @initializeMixin
+    class Mixin extends BaseClass {
       @meta static object = {};
 
       @method initializeFacade(): void {
         super.initializeFacade(... arguments)
-        if (!this.container.isBound('MongoCursor')) {
-          this.container.bind('MongoCursor').to(this.Module.NS.MongoCursor);
+        if (!this.isBound('MongoCursor')) {
+          this.bind('MongoCursor').to(this.Module.NS.MongoCursor);
         }
       }
     }
-    return Patch;
+    return Mixin;
   });
 }

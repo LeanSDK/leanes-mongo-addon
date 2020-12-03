@@ -25,15 +25,17 @@ import MongoAdapterMixin from './mixins/MongoAdapterMixin';
 import BucketAdapterMixin from './mixins/BucketAdapterMixin';
 import QueryableMongoAdapterMixin from './mixins/QueryableMongoAdapterMixin';
 
-import FacadePatch from './patches/FacadePatch';
+import MongoFacadeMixin from './mixins/MongoFacadeMixin';
 
 export default (Module) => {
   const {
-    initializeMixin, meta, method, patch
+    initializeMixin, meta, extend
   } = Module.NS;
 
   return [ 'MongoAddon', (BaseClass) => {
-    @FacadePatch
+    @extend('MongoFacadeMixin', 'Facade')
+
+    @MongoFacadeMixin
 
     @QueryableMongoAdapterMixin
     @BucketAdapterMixin
@@ -50,10 +52,6 @@ export default (Module) => {
     @initializeMixin
     class Mixin extends BaseClass {
       @meta static object = {};
-
-      @method static including() {
-        patch(this.NS.FacadePatch)(this.NS.Facade);
-      }
     }
     return Mixin;
   }]
