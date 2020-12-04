@@ -48,7 +48,7 @@ export default (Module) => {
         options: ?object
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
-        const voDB = await this.collection.connection;
+        const voDB = await this.collection.adapter.connection;
         this.collection.send(
           SEND_TO_LOG,
           `MongoMigrationMixin::createCollection qualifiedName = ${qualifiedName}, options = ${jsonStringify(options)}`,
@@ -63,7 +63,7 @@ export default (Module) => {
         options: ?object
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(`${collectionName1}_${collectionName2}`);
-        const voDB = await this.collection.connection;
+        const voDB = await this.collection.adapter.connection;
         this.collection.send(
           SEND_TO_LOG,
           `MongoMigrationMixin::createEdgeCollection qualifiedName = ${qualifiedName}, options = ${jsonStringify(options)}`,
@@ -102,7 +102,7 @@ export default (Module) => {
           initial = null;
         }
         if (initial != null) {
-          const voDB = await this.collection.connection;
+          const voDB = await this.collection.adapter.connection;
           this.collection.send(
             SEND_TO_LOG,
             `MongoMigrationMixin::addField qualifiedName = ${qualifiedName}, $set: ${jsonStringify({
@@ -130,7 +130,7 @@ export default (Module) => {
         }
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
-        const voDB = await this.collection.connection;
+        const voDB = await this.collection.adapter.connection;
         const voDbCollection = await getCollection(voDB, qualifiedName);
         const indexFields = {};
         fieldNames.forEach((fieldName) => {
@@ -190,7 +190,7 @@ export default (Module) => {
           hash
         } = SUPPORTED_TYPES;
         const qualifiedName = this.collection.collectionFullName(collectionName);
-        const voDB = await this.collection.connection;
+        const voDB = await this.collection.adapter.connection;
         const voDbCollection = await getCollection(voDB, qualifiedName);
         const cursor = await voDbCollection.find().batchSize(1);
         const type = _.isString(options) ? options : options.type;
@@ -240,7 +240,7 @@ export default (Module) => {
         newFieldName: string
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
-        const voDB = await this.collection.connection;
+        const voDB = await this.collection.adapter.connection;
         const voDbCollection = await getCollection(voDB, qualifiedName);
         this.collection.send(
           SEND_TO_LOG,
@@ -278,7 +278,7 @@ export default (Module) => {
           `MongoMigrationMixin::renameCollection qualifiedName = ${qualifiedName}, newQualifiedName = ${newQualifiedName}`,
           LEVELS[DEBUG]
         );
-        const voDB = await this.collection.connection;
+        const voDB = await this.collection.adapter.connection;
         const voDbCollection = await getCollection(voDB, qualifiedName);
         await voDbCollection.rename(newQualifiedName);
       }
@@ -287,7 +287,7 @@ export default (Module) => {
         collectionName: string
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
-        const voDB = await this.collection.connection;
+        const voDB = await this.collection.adapter.connection;
         if ((await voDB.listCollections({ name: qualifiedName }).toArray()).length !== 0) {
           this.collection.send(
             SEND_TO_LOG,
@@ -302,7 +302,7 @@ export default (Module) => {
         collectionName1: string,
         collectionName2: string
       ): Promise<void> {
-        const voDB = await this.collection.connection;
+        const voDB = await this.collection.adapter.connection;
         const qualifiedName = this.collection.collectionFullName(`${collectionName1}_${collectionName2}`);
         if ((await voDB.listCollections({ name: qualifiedName }).toArray()).length !== 0) {
           this.collection.send(
@@ -319,7 +319,7 @@ export default (Module) => {
         fieldName: string
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
-        const voDB = await this.collection.connection;
+        const voDB = await this.collection.adapter.connection;
         const voDbCollection = await getCollection(voDB, qualifiedName);
         this.collection.send(
           SEND_TO_LOG,
@@ -351,7 +351,7 @@ export default (Module) => {
         }
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
-        const voDB = await this.collection.connection;
+        const voDB = await this.collection.adapter.connection;
         const voDbCollection = await getCollection(voDB, qualifiedName);
         const indexName = options.name;
         if (!(indexName != null)) {
@@ -381,7 +381,7 @@ export default (Module) => {
         options: ?object = {}
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
-        const voDB = await this.collection.connection;
+        const voDB = await this.collection.adapter.connection;
         const voDbCollection = await getCollection(voDB, qualifiedName);
         const timestamps = {
           createdAt: null,
