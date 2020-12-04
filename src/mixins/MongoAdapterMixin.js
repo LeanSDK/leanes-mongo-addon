@@ -138,6 +138,12 @@ export default (Module) => {
       @property _collection: ?Promise<object>;
       // @property _bucket: ?Promise<object>;
 
+      @property _host: string = null;
+
+      @property _port: string = null;
+
+      @property _dbName: string = null;
+
       @property host: string = 'localhost';
 
       @property port: string = '27017';
@@ -201,6 +207,9 @@ export default (Module) => {
       @method onRegister() {
         super.onRegister(... arguments);
         const { host, port, dbName } = this;
+        this._host = host;
+        this._port = port;
+        this._dbName = dbName;
         (() => {
           return this.connection;
         })();
@@ -212,7 +221,7 @@ export default (Module) => {
 
       @method async onRemove() {
         super.onRemove(...arguments);
-        const { host, port, dbName } = this;
+        const { _host: host, _port: port, _dbName: dbName } = this;
         let count = _consumers.get(`${host}:${port}/${dbName}`);
         count--;
         _consumers.set(`${host}:${port}/${dbName}`, count);
