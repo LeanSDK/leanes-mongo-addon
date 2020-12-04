@@ -125,8 +125,8 @@ export default (Module) => {
         fieldNames: string[],
         options: {
           type: 'hash' | 'skiplist' | 'persistent' | 'geo' | 'fulltext',
-          unique: ?boolean,
-          sparse: ?boolean
+          unique?: boolean,
+          sparse?: boolean
         }
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
@@ -346,8 +346,8 @@ export default (Module) => {
         fieldNames: string[],
         options: {
           type: 'hash' | 'skiplist' | 'persistent' | 'geo' | 'fulltext',
-          unique: ?boolean,
-          sparse: ?boolean
+          unique?: boolean,
+          sparse?: boolean
         }
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
