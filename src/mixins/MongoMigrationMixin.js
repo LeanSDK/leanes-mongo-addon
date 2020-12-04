@@ -48,7 +48,13 @@ export default (Module) => {
         options: ?object
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
-        const voDB = voDB.createCollection(qualifiedName, options);
+        const voDB = await this.collection.connection;
+        this.collection.send(
+          SEND_TO_LOG,
+          `MongoMigrationMixin::createCollection qualifiedName = ${qualifiedName}, options = ${jsonStringify(options)}`,
+          LEVELS[DEBUG]
+        );
+        await voDB.createCollection(qualifiedName, options);
       }
 
       @method async createEdgeCollection(
