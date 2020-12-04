@@ -74,7 +74,7 @@ export default (Module) => {
     // Query,
     // Cursor, MongoCursor,
     initializeMixin, meta, property, method,
-    Utils: { jsonStringify, assert }
+    Utils: { jsonStringify, assert, inflect }
   } = Module.NS;
   const { LogMessage } = Pipes.NS;
   const {
@@ -167,7 +167,7 @@ export default (Module) => {
         if (this._collection == null) {
           this._collection = (async () => {
             const connection = (await this.connection);
-            const name = this.collectionFullName();
+            const name = this.collectionName();
             return await new Promise((resolve, reject) => {
               connection.collection(name, { strict: true }, (err, col) => {
                 err != null ? reject(err) : resolve(col);
@@ -176,6 +176,12 @@ export default (Module) => {
           })();
         }
         return this._collection;
+      }
+
+      @method collectionName(): string {
+        const prefix = inflect.underscore(this.Module.name)
+        const name = inflect.pluralize(inflect.underscore((this.getName() || '').replace(/Adapter$/, '')))
+        return `${prefix}_${name}`;
       }
 
       // @property get bucket(): Promise<object> {
