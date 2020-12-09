@@ -161,9 +161,9 @@ export default (Module) => {
             const credentials = (username != null && password != null)
               ? `${username}:${password}@`
               : '';
-            const dbUrl = `mongodb://${credentials}${host}:${port}/${dbName}?authSource=admin`;
-            const connection = await MongoClient.connect(dbUrl);
-            return connection;
+            const url = `mongodb://${credentials}${host}:${port}`;
+            const client = await MongoClient.connect(url);
+            return client.db(dbName);
           })());
         }
         return _connections.get(`${host}:${port}/${dbName}`);
