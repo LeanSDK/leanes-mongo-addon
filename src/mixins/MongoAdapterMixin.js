@@ -162,7 +162,7 @@ export default (Module) => {
               ? `${username}:${password}@`
               : '';
             const url = `mongodb://${credentials}${host}:${port}`;
-            const client = await MongoClient.connect(url);
+            const client = await MongoClient.connect(url, { useUnifiedTopology: true });
             return client.db(dbName);
           })());
         }
