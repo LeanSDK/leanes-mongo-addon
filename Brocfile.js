@@ -49,6 +49,7 @@ const dev = new Rollup(appRoot, {
       babel({
         extensions,
         sourceMap: true,
+        runtimeHelpers: true,
         exclude: "node_modules/**",
         presets: [
           // "@babel/preset-env"
@@ -63,6 +64,7 @@ const dev = new Rollup(appRoot, {
           "@babel/plugin-transform-flow-strip-types",
           ["@babel/plugin-proposal-decorators", { "legacy": true }],
           ["@babel/plugin-proposal-class-properties", { "loose": true }],
+          "@babel/plugin-transform-runtime",
         ],
       }),
       globals({
@@ -122,6 +124,7 @@ const prod = new Rollup(appRoot, {
       babel({
         extensions,
         sourceMap: false,
+        runtimeHelpers: true,
         exclude: "node_modules/**",
         presets: [
           // "@babel/preset-env"
@@ -132,6 +135,7 @@ const prod = new Rollup(appRoot, {
           "@babel/plugin-transform-flow-strip-types",
           ["@babel/plugin-proposal-decorators", { "legacy": true }],
           ["@babel/plugin-proposal-class-properties", { "loose": true }],
+          "@babel/plugin-transform-runtime",
         ],
       }),
       globals({
