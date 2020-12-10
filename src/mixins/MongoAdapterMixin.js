@@ -164,8 +164,7 @@ export default (Module) => {
               ? `${username}:${password}@`
               : '';
             const url = `${dbProto}://${credentials}${host}${dbProto.includes('+srv') ? '' : ":" + port}/admin`;
-            const client = await MongoClient.connect(url, { useUnifiedTopology: true });
-            return client.db(dbName);
+            return await MongoClient.connect(url, { useUnifiedTopology: true });
           })());
         }
         return _connections.get(`${host}:${port}/${dbName}`);
@@ -177,7 +176,7 @@ export default (Module) => {
             const connection = (await this.connection);
             const name = this.collectionName();
             return await new Promise((resolve, reject) => {
-              connection.collection(name, { strict: true }, (err, col) => {
+              connection.db(this._dbName).collection(name, { strict: true }, (err, col) => {
                 err != null ? reject(err) : resolve(col);
               });
             });
