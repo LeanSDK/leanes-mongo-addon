@@ -215,7 +215,7 @@ export default (Module) => {
       @method async takeBy(acRecord: R, query: object, options: ?object = {}): Promise<A> {
         const collection = await this.collection;
         const stats = await collection.stats();
-        const voQuery = this.parseFilter(Parser.parse(query));
+        const voQuery = this.parseFilter(acRecord, Parser.parse(query));
         this.send(
           SEND_TO_LOG,
           `QueryableMongoAdapterMixin::takeBy ns = ${stats.ns}, voQuery = ${jsonStringify(voQuery)}`,
@@ -320,7 +320,7 @@ export default (Module) => {
       @method async exists(acRecord: R, query: object): Promise<boolean> {
         const collection = await this.collection;
         const stats = await collection.stats();
-        const voQuery = this.parseFilter(Parser.parse(query));
+        const voQuery = this.parseFilter(acRecord, Parser.parse(query));
         this.send(
           SEND_TO_LOG,
           `QueryableMongoAdapterMixin::exists ns = ${stats.ns}, voQuery = ${jsonStringify(voQuery)}`,
@@ -480,6 +480,7 @@ export default (Module) => {
       }
 
       @method parseFilter(
+        acRecord: Class<*>,
         data: {
           field?: ?string, parts?: ?object[], operator?: ?string, operand?: ?any, implicitField?: ?boolean
         }
@@ -488,7 +489,7 @@ export default (Module) => {
           field, parts = [], operator, operand, implicitField
         } = data;
         if (field != null && operator !== '$elemMatch' && parts.length === 0) {
-          const customFilter = this.delegate.customFilters[field];
+          const customFilter = acRecord.customFilters[field];
           if (customFilter != null && customFilter[operator] != null) {
             const customFilterFunc = customFilter[operator];
             return customFilterFunc.call(this, operand);
@@ -502,11 +503,11 @@ export default (Module) => {
                 const subquery = this.operatorsMap[part.operator]('temporaryField', part.operand);
                 return Object.assign(result, subquery.temporaryField)
               } else {
-                return Object.assign(result, this.parseFilter(part));
+                return Object.assign(result, this.parseFilter(acRecord, part));
               }
             }, {}))
           } else {
-            return this.operatorsMap[operator != null ? operator : '$and'](parts.map(this.parseFilter.bind(this)));
+            return this.operatorsMap[operator != null ? operator : '$and'](parts.map(this.parseFilter.bind(this, acRecord)));
           }
         }
       }
@@ -538,7 +539,7 @@ export default (Module) => {
               const voFilter = aoQuery.$filter
               if (voFilter != null) {
                 voQuery.pipeline.push({
-                  $match: this.parseFilter(Parser.parse(voFilter))
+                  $match: this.parseFilter(acRecord, Parser.parse(voFilter))
                 });
               }
 
@@ -585,7 +586,7 @@ export default (Module) => {
                 const voFilter = aoQuery.$filter;
                 if (voFilter != null) {
                   voQuery.pipeline.push({
-                    $match: this.parseFilter(Parser.parse(voFilter))
+                    $match: this.parseFilter(acRecord, Parser.parse(voFilter))
                   });
                 }
 
@@ -630,7 +631,7 @@ export default (Module) => {
               const voFilter = aoQuery.$filter;
               if (voFilter != null) {
                 voQuery.pipeline.push({
-                  $match: this.parseFilter(Parser.parse(voFilter))
+                  $match: this.parseFilter(acRecord, Parser.parse(voFilter))
                 });
               }
 
@@ -679,7 +680,7 @@ export default (Module) => {
                   $group: {
                     _id: collect,
                     [`${into}`]: {
-                      $push: Object.keys(this.delegate.attributes).reduce(function (p, c) {
+                      $push: Object.keys(acRecord.attributes).reduce(function (p, c) {
                         p[c] = `$${c}`;
                         return p;
                       }, {})
@@ -690,7 +691,7 @@ export default (Module) => {
                 const voHaving = aoQuery.$having;
                 if (voHaving != null) {
                   voQuery.pipeline.push({
-                    $match: this.parseFilter(Parser.parse(voHaving))
+                    $match: this.parseFilter(acRecord, Parser.parse(voHaving))
                   });
                 }
 
