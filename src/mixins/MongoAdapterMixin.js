@@ -144,6 +144,8 @@ export default (Module) => {
 
       @property _dbName: string = null;
 
+      @property dbProto: string = 'mongodb';
+
       @property host: string = 'localhost';
 
       @property port: string = '27017';
@@ -155,13 +157,13 @@ export default (Module) => {
       @property password: ?string = null;
 
       @property get connection(): Promise<object> {
-        const { username, password, host, port, dbName } = this;
+        const { username, password, host, port, dbName, dbProto } = this;
         if (_connections.get(`${host}:${port}/${dbName}`) == null) {
           _connections.set(`${host}:${port}/${dbName}`, (async () => {
             const credentials = (username != null && password != null)
               ? `${username}:${password}@`
               : '';
-            const url = `mongodb://${credentials}${host}:${port}`;
+            const url = `${dbProto}://${credentials}${host}${dbProto.includes('+srv') ? '' : ":" + port}/admin`;
             const client = await MongoClient.connect(url, { useUnifiedTopology: true });
             return client.db(dbName);
           })());
