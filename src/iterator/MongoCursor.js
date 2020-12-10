@@ -191,7 +191,7 @@ export default (Module) => {
 
     @method async first(): Promise<?RecordInterface> {
       try {
-        const result = (await this.hasNext()) != null ? (await this.next()) : null;
+        const result = (await this.hasNext()) ? (await this.next()) : null;
         await this.close();
         return result;
       } catch (err) {
