@@ -39,7 +39,9 @@ export default (Module) => {
     @property _collection: ?C;
     @property get isClosed(): boolean {
       if (this._cursor != null) {
-        return this._cursor.isClosed() != null ? this._cursor.isClosed() : true;
+        const isExhausted = this._cursor.isExhausted != null ? this._cursor.isExhausted() : true;
+        const isClosed = this._cursor.isClosed != null ? this._cursor.isClosed() : true;
+        return isExhausted || isClosed;
       }
       return true;
     }
