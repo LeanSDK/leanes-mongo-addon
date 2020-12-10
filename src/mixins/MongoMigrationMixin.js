@@ -287,7 +287,7 @@ export default (Module) => {
         collectionName: string
       ): Promise<void> {
         const qualifiedName = this.collection.collectionFullName(collectionName);
-        const voDB = await this.collection.adapter.connection;
+        const voDB = await this.collection.adapter.db;
         if ((await voDB.listCollections({ name: qualifiedName }).toArray()).length !== 0) {
           this.collection.send(
             SEND_TO_LOG,
@@ -302,7 +302,7 @@ export default (Module) => {
         collectionName1: string,
         collectionName2: string
       ): Promise<void> {
-        const voDB = await this.collection.adapter.connection;
+        const voDB = await this.collection.adapter.db;
         const qualifiedName = this.collection.collectionFullName(`${collectionName1}_${collectionName2}`);
         if ((await voDB.listCollections({ name: qualifiedName }).toArray()).length !== 0) {
           this.collection.send(

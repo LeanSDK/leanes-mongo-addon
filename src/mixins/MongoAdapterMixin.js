@@ -136,6 +136,8 @@ export default (Module) => {
       @meta static object = {};
 
       @property _collection: ?Promise<object>;
+
+      @property _db: ?Promise<object>;
       // @property _bucket: ?Promise<object>;
 
       @property _host: string = null;
@@ -170,13 +172,23 @@ export default (Module) => {
         return _connections.get(`${host}:${port}/${dbName}`);
       }
 
+      @property get db(): Promise<object> {
+        if (this._db == null) {
+          this._db = (async () => {
+            const connection = (await this.connection);
+            return connection.db(this._dbName);
+          })();
+        }
+        return this._db;
+      }
+
       @property get collection(): Promise<object> {
         if (this._collection == null) {
           this._collection = (async () => {
-            const connection = (await this.connection);
+            const db = (await this.db);
             const name = this.collectionName();
             return await new Promise((resolve, reject) => {
-              connection.db(this._dbName).collection(name, { strict: true }, (err, col) => {
+              db.collection(name, { strict: true }, (err, col) => {
                 err != null ? reject(err) : resolve(col);
               });
             });
