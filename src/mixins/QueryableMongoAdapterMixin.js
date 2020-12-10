@@ -481,7 +481,7 @@ export default (Module) => {
 
       @method parseFilter(
         data: {
-          field: ?string, parts: ?object[], operator: ?string, operand: ?any, implicitField: ?boolean
+          field?: ?string, parts?: ?object[], operator?: ?string, operand?: ?any, implicitField?: ?boolean
         }
       ): object {
         const {
