@@ -48,7 +48,7 @@ export default (Module) => {
       if (/^\@doc\./.test(value)) {
         return value.replace('@doc.', '');
       } else {
-        return value.replace('@', '');
+        return value.replace(/^[@]/, '');
       }
     } else {
       return value;
