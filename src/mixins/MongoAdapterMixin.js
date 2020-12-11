@@ -132,7 +132,7 @@ export default (Module) => {
     @initializeMixin
     class Mixin<
       R = Class<*>, T = object, A = MongoNativeCursorInterface
-    > extends BaseClass implements DriverInterface<R, T, A> {
+    > extends BaseClass implements DriverInterface<R, object, A> {
       @meta static object = {};
 
       @property _collection: ?Promise<object>;
@@ -246,7 +246,7 @@ export default (Module) => {
         }
       }
 
-      @method async push(acRecord: R, snapshot: T): Promise<T> {
+      @method async push(acRecord: R, snapshot: object): Promise<object> {
         const collection = await this.collection;
         // const ipoMultitonKey = this.constructor.instanceVariables['~multitonKey'].pointer;
         const stats = await collection.stats();
@@ -374,7 +374,7 @@ export default (Module) => {
         // return voNativeCursor;
       }
 
-      @method async override(acRecord: R, id: string | number, snapshot: T): Promise<T> {
+      @method async override(acRecord: R, id: string | number, snapshot: object): Promise<object> {
         const collection = await this.collection;
         // const snapshot = await this.serialize(aoRecord);
         const stats = await collection.stats();
