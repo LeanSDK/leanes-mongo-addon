@@ -212,7 +212,7 @@ export default (Module) => {
       //   }
       // }
 
-      @method async takeBy(acRecord: R, query: object, options: ?object = {}): Promise<A> {
+      @method async takeBy(acRecord: R, query: object, options: ?object = {}): Promise<MongoNativeCursorInterface> {
         const collection = await this.collection;
         const stats = await collection.stats();
         const voQuery = this.parseFilter(acRecord, Parser.parse(query));
@@ -829,7 +829,7 @@ export default (Module) => {
 
       @method async executeQuery(
         acRecord: R, aoQuery: object | string | QueryInterface
-      ): Promise<?A> {
+      ): Promise<?MongoNativeCursorInterface> {
         const collection = await this.collection;
         const stats = await collection.stats();
         this.send(
